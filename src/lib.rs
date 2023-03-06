@@ -90,6 +90,17 @@ pub fn parse_input() -> Result<HashMap<String, String>, Error> {
     Ok(arguments)
 }
 
+pub fn get_dimension(pi: i32, curve_length_100: f64, curve_angle: Angle, result_name: &str) -> &str {
+    let mut result_dimension: &str = "";
+    match result_name.to_lowercase().as_str() {
+        "pc" => result_dimension = todo!(),
+        "pt" => result_dimension = todo!(),
+        _ => panic!("input.md is asking for a non-existent dimension."),
+    }
+
+    result_dimension
+}
+
 
 /*The general idea:
 If given any of the not Da, I, PI details, convert the given information from a .md document

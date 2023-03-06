@@ -44,13 +44,4 @@ mod tests {
         assert!(true);
     }
 
-    #[test]
-    fn test_to_radians() {
-        let dd_value = Angle::decimal_degrees(1.0);
-        let dms_1 = Angle::dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East});
-        println!("{:?}", dd_value.to_radians());
-        println!("{:?}", dms_1.to_radians());
-        assert!(true);
-    }
-
 }
