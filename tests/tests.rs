@@ -44,4 +44,13 @@ mod tests {
         assert!(true);
     }
 
+    #[test]
+    fn build_ha() {
+        let horizontal_alignment_1 = HorizontalCurve::create(parse_input());
+        
+        println!("{:#?}", parse_input());
+        println!("{:#?}", horizontal_alignment_1);
+        assert!(false);
+    }
+
 }

@@ -40,11 +40,13 @@ impl Angle {
     }
 }
 
+#[derive(Debug)]
 pub struct HorizontalCurve {
     dimensions: HorizontalDimensions,
     stations: HorizontalCriticalStations,
 }
 
+#[derive(Debug)]
 pub struct HorizontalCriticalStations {
     pc: f64, 
     pi: f64,
@@ -52,6 +54,7 @@ pub struct HorizontalCriticalStations {
 
 }
 
+#[derive(Debug)]
 pub struct HorizontalDimensions {
     radius: f64,
     curve_length: f64,
@@ -83,8 +86,6 @@ pub fn parse_input() -> Result<HashMap<String, String>, Error> {
                 None => continue,
                 Some(args) => arguments.insert(args.0.to_owned(), args.1.to_owned()),
             };
-        } else {
-            panic!("Failed at parsing input.md file.");
         }
     }
 
@@ -104,18 +105,23 @@ pub fn get_dimension(pi: i32, curve_length_100: f64, curve_angle: Angle, result_
 }
 
 impl HorizontalCurve {
-    fn build(&mut self, given: Result<HashMap<String, String>, Error>) -> HorizontalCurve {
+    pub fn create(given: Result<HashMap<String, String>, Error>) -> HorizontalCurve { //
         if let Ok(given) = given {
             let dimensions = HorizontalDimensions { 
                 radius: calc_radius(given.get("Da").expect("no Da")), 
-                curve_length: (), 
-                tangent_distance: (), 
-                long_chord: (), 
-                middle_ordinate: (), 
-                external: (), 
-                curve_length_100: (), 
-                curve_angle: () };
-            let stations = HorizontalCriticalStations { pc: (), pi: (), pt: () };
+                curve_length: calc_curve_length(), 
+                tangent_distance: calc_tangent_distance(), 
+                long_chord: calc_long_chord(), 
+                middle_ordinate: calc_middle_ordinate(), 
+                external: calc_external(), 
+                curve_length_100: calc_curve_length_100(), 
+                curve_angle: calc_curve_angle()
+            };
+            let stations = HorizontalCriticalStations { 
+                pc: calc_pc(), 
+                pi: calc_pi(), 
+                pt: calc_pt() 
+            };
             
             return HorizontalCurve {dimensions, stations}
         } else {
