@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::fs::File;
 use std::io::{Write, BufReader, BufRead, Error};
+mod calc_dimensions;
+use calc_dimensions::calc_horizontal_dimensions::*;
 
 #[derive(Debug)]
 pub enum Angle {
@@ -44,9 +46,9 @@ pub struct HorizontalCurve {
 }
 
 pub struct HorizontalCriticalStations {
-    pc: i32, 
-    pi: i32,
-    pt: i32,
+    pc: f64, 
+    pi: f64,
+    pt: f64,
 
 }
 
@@ -100,6 +102,27 @@ pub fn get_dimension(pi: i32, curve_length_100: f64, curve_angle: Angle, result_
 
     result_dimension
 }
+
+impl HorizontalCurve {
+    fn build(&mut self, given: Result<HashMap<String, String>, Error>) -> HorizontalCurve {
+        if let Ok(given) = given {
+            let dimensions = HorizontalDimensions { 
+                radius: calc_radius(given.get("Da").expect("no Da")), 
+                curve_length: (), 
+                tangent_distance: (), 
+                long_chord: (), 
+                middle_ordinate: (), 
+                external: (), 
+                curve_length_100: (), 
+                curve_angle: () };
+            let stations = HorizontalCriticalStations { pc: (), pi: (), pt: () };
+            
+            return HorizontalCurve {dimensions, stations}
+        } else {
+            panic!("handle this better please");
+        }
+    }
+} //missing is determining if there's enough information to build the HA, and building the HA itself. this is ruff.
 
 
 /*The general idea:
