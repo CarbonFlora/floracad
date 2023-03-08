@@ -82,7 +82,7 @@ pub struct HorizontalDimensions {
     long_chord: f64,
     middle_ordinate: f64,
     external: f64,
-    curve_length_100: f64, //(Da)
+    curve_length_100: Angle, //(Da)
     curve_angle: Angle, //radians (I)
 }
 
@@ -128,19 +128,19 @@ impl HorizontalCurve {
     pub fn create(given: Result<HashMap<String, String>, Error>) -> HorizontalCurve { //
         if let Ok(given) = given {
             let dimensions = HorizontalDimensions { 
-                radius: calc_radius(given.get("Da").expect("no Da")), 
-                curve_length: calc_curve_length(), 
-                tangent_distance: calc_tangent_distance(), 
-                long_chord: calc_long_chord(), 
-                middle_ordinate: calc_middle_ordinate(), 
-                external: calc_external(), 
-                curve_length_100: calc_curve_length_100(), 
-                curve_angle: calc_curve_angle()
+                radius: calc_radius(given.get("Da").unwrap()), 
+                curve_length: calc_curve_length(given.get("Da").unwrap(),given.get("I").unwrap()), 
+                tangent_distance: calc_tangent_distance(given.get("Da").unwrap(),given.get("I").unwrap()), 
+                long_chord: calc_long_chord(given.get("Da").unwrap(),given.get("I").unwrap()), 
+                middle_ordinate: calc_middle_ordinate(given.get("Da").unwrap(),given.get("I").unwrap()), 
+                external: calc_external(given.get("Da").unwrap(),given.get("I").unwrap()), 
+                curve_length_100: calc_curve_length_100(given.get("Da").unwrap()), 
+                curve_angle: calc_curve_angle(given.get("I").unwrap())
             };
             let stations = HorizontalCriticalStations { 
-                pc: calc_pc(), 
-                pi: calc_pi(), 
-                pt: calc_pt() 
+                pc: calc_pc(given.get("PI").unwrap(), dimensions.tangent_distance), 
+                pi: calc_pi(given.get("PI").unwrap()), 
+                pt: calc_pt(given.get("PI").unwrap(), dimensions.tangent_distance, dimensions.curve_length)
             };
             
             return HorizontalCurve {dimensions, stations}
