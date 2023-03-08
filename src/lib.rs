@@ -1,5 +1,5 @@
 use eqsolver::single_variable::FDNewton;
-use dms_coordinates::DMS;
+use dms_coordinates::{DMS, Bearing::*};
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::fs::File;
@@ -15,6 +15,26 @@ pub enum Angle {
 }
 
 impl Angle {
+    pub fn create_dms(line: &String) -> Angle {
+        let delimiters = "'\"d";
+        let parts: Vec<&str> = line.split(|c| delimiters.contains(c)).collect();
+        
+        Angle::dms(DMS { 
+            degrees: parts[0].parse::<i32>().unwrap(), 
+            minutes: parts[1].parse::<i32>().unwrap(), 
+            seconds: parts[2].parse::<f64>().unwrap(), 
+            bearing: East 
+        })
+    }
+
+    pub fn value(&self) -> f64 {
+        match self {
+            Angle::decimal_degrees(n) => return *n,
+            Angle::radians(n) => return *n,
+            Angle::dms(n) => panic!("Can't get value of {n}"), //this should be changed.
+        }
+    }
+
     pub fn to_dms(self) -> Self {
         match self {
             Angle::decimal_degrees(ddeg) => Angle::dms(DMS::from_decimal_degrees(ddeg, false)),

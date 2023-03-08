@@ -2,7 +2,10 @@ pub mod calc_horizontal_dimensions {
     use crate::Angle;
 
     pub fn calc_radius(da: &String) -> f64 {
-        1.0
+        let da = Angle::create_dms(da).to_decimal_degrees();
+        //println!("da: {:?}", da.value());
+
+        5729.58/da.value()
     }
 
     pub fn calc_curve_length() -> f64 {
