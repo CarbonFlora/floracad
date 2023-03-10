@@ -1,4 +1,6 @@
 pub mod calc_horizontal_dimensions {
+    use dms_coordinates::{DMS};
+
     use crate::Angle;
 
     pub fn calc_radius(da: &String) -> f64 {
@@ -68,5 +70,12 @@ pub mod calc_horizontal_dimensions {
         let pi_value = pi[0]*100.0+pi[1]; //todo!(panic if pi[1] is 100 or greater || pi[2] exists)
         
         pi_value-tan_dist+curve_length
+    }
+
+    pub fn radius_to_da(radius: &String) -> String {
+        let radius = radius.parse::<f64>().unwrap();
+        let val = DMS::from_decimal_degrees(5729.58/radius, false);
+        let rstring = String::from({(val.degrees).to_string()}+"d"+{&(val.minutes).to_string()}+"'"+{&(val.seconds).to_string()}+"\"");
+        rstring
     }
 }

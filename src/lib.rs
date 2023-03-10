@@ -31,7 +31,7 @@ impl Angle {
         match self {
             Angle::decimal_degrees(n) => return *n,
             Angle::radians(n) => return *n,
-            Angle::dms(n) => panic!("Can't get value of {n}"), //this should be changed.
+            Angle::dms(n) => panic!("pain"),
         }
     }
 
@@ -126,7 +126,11 @@ pub fn get_dimension(pi: i32, curve_length_100: f64, curve_angle: Angle, result_
 
 impl HorizontalCurve {
     pub fn create(given: Result<HashMap<String, String>, Error>) -> HorizontalCurve { //
-        if let Ok(given) = given {
+        if let Ok(mut given) = given {
+            if !given.contains_key("Da") {
+                given.insert("Da".to_string(), radius_to_da(given.get("R").unwrap()));
+            }
+
             let dimensions = HorizontalDimensions { 
                 radius: calc_radius(given.get("Da").unwrap()), 
                 curve_length: calc_curve_length(given.get("Da").unwrap(),given.get("I").unwrap()), 
