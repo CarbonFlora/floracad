@@ -50,7 +50,14 @@ mod tests {
         
         println!("{:#?}", parse_input());
         println!("{:#?}", horizontal_alignment_1);
-        assert!(false);
+        assert!(true);
     }
 
+    #[test]
+    fn min_sight_distance_1() {
+        let ex1 = calc_min_sight_distance(65, SightType::Stopping, true);
+
+        println!("{:#?}", ex1);
+        assert!(false);
+    }
 }

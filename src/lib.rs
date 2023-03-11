@@ -8,6 +8,13 @@ mod calc_dimensions;
 use calc_dimensions::calc_horizontal_dimensions::*;
 
 #[derive(Debug)]
+pub enum SightType {
+    Stopping,
+    Passing,
+    Decision,
+}
+
+#[derive(Debug)]
 pub enum Angle {
     DecimalDegrees (f64),
     Dms (DMS),
@@ -63,11 +70,11 @@ impl Angle {
 #[derive(Debug)]
 pub struct HorizontalCurve {
     dimensions: HorizontalDimensions,
-    stations: HorizontalCriticalStations,
+    stations: HorizontalStations,
 }
 
 #[derive(Debug)]
-pub struct HorizontalCriticalStations {
+pub struct HorizontalStations {
     pc: f64, 
     pi: f64,
     pt: f64,
@@ -84,6 +91,7 @@ pub struct HorizontalDimensions {
     external: f64,
     curve_length_100: Angle, //(Da)
     curve_angle: Angle, //radians (I)
+    sight_distance: Option<f64>,
 }
 
 pub fn single_var() {
@@ -129,9 +137,10 @@ impl HorizontalCurve {
             middle_ordinate: calc_middle_ordinate(da,i), 
             external: calc_external(da,i), 
             curve_length_100: calc_curve_length_100(da), 
-            curve_angle: calc_curve_angle(i)
+            curve_angle: calc_curve_angle(i),
+            sight_distance: None,
         };
-        let stations = HorizontalCriticalStations { 
+        let stations = HorizontalStations { 
             pc: calc_pc(pi, dimensions.tangent_distance), 
             pi: calc_pi(pi), 
             pt: calc_pt(pi, dimensions.tangent_distance, dimensions.curve_length)
@@ -139,9 +148,17 @@ impl HorizontalCurve {
 
         Ok(HorizontalCurve {dimensions, stations})
     }
-} //missing is determining if there's enough information to build the HA, and building the HA itself. this is ruff.
+}
 
-
-/*The general idea:
-If given any of the not Da, I, PI details, convert the given information from a .md document
-to either Da, I, or PI. From there you can figure out everything else. */
+//The stopping sight distances in Table 201.1 should be increased by 20 percent on sustained downgrades steeper than 3 percent and longer than one mile. use figure 201.6
+pub fn calc_min_sight_distance(design_speed: i32, sight_type: SightType, sustained_downgrade: bool) -> Result<f64, Error> {
+    let mut minimum_sight_distance = match sight_type {
+        SightType::Stopping => 1.0,
+        SightType::Passing => 2.0,
+        SightType::Decision => 3.0,
+    };
+    if sustained_downgrade {
+        minimum_sight_distance *= 1.2;
+    }
+    Ok(minimum_sight_distance)
+}
