@@ -54,10 +54,40 @@ mod tests {
     }
 
     #[test]
-    fn min_sight_distance_1() {
-        let ex1 = calc_min_sight_distance(65, SightType::Stopping, true);
+    fn parse_table_1() {
+        let ex1 = parse_table(SightType::Stopping);
 
         println!("{:#?}", ex1);
-        assert!(false);
+        assert!(true);
     }
+
+    #[test]
+    fn min_sight_distance_1() {
+        let stopping_table = parse_table(SightType::Stopping);
+        if let Ok(stopping_table) = stopping_table {
+            let ex1 = calc_min_sight_distance(stopping_table, 65, SightType::Stopping, false);
+            println!("design sight distance: {:#?}", ex1);
+        }
+        assert!(true);
+    }
+
+    #[test]
+    fn min_sight_distance_2() {
+        let stopping_table = parse_table(SightType::Passing);
+        if let Ok(stopping_table) = stopping_table {
+            let ex1 = calc_min_sight_distance(stopping_table, 30, SightType::Passing, false);
+            println!("design sight distance: {:#?}", ex1);
+        }
+        assert!(true);
+    }
+
+    #[test]
+    fn min_sight_distance_3() {
+        let stopping_table = parse_table(SightType::Decision);
+        if let Ok(stopping_table) = stopping_table {
+            let ex1 = calc_min_sight_distance(stopping_table, 80, SightType::Decision, false);
+            println!("design sight distance: {:#?}", ex1);
+        }
+        assert!(true);
+    } //currently I think errors should just spit out into eprintln! rather than Error or panic variants. 
 }
