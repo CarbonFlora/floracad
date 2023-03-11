@@ -19,8 +19,8 @@ mod tests {
 
     #[test]
     fn test_to_dms() {
-        let rad = Angle::radians(1.0);
-        let dd_value = Angle::decimal_degrees(1.4687);
+        let rad = Angle::Radians(1.0);
+        let dd_value = Angle::DecimalDegrees(1.4687);
         println!("{:?}", rad.to_dms());
         println!("{:?}", dd_value.to_dms());
         assert!(true);
@@ -28,8 +28,8 @@ mod tests {
 
     #[test]
     fn test_to_dd() {
-        let rad = Angle::radians(1.0);
-        let dms_1 = Angle::dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East});
+        let rad = Angle::Radians(1.0);
+        let dms_1 = Angle::Dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East});
         println!("{:?}", rad.to_decimal_degrees());
         println!("{:?}", dms_1.to_decimal_degrees());
         assert!(true);
@@ -37,8 +37,8 @@ mod tests {
 
     #[test]
     fn test_to_radians() {
-        let dd_value = Angle::decimal_degrees(1.0);
-        let dms_1 = Angle::dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East});
+        let dd_value = Angle::DecimalDegrees(1.0);
+        let dms_1 = Angle::Dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East});
         println!("{:?}", dd_value.to_radians());
         println!("{:?}", dms_1.to_radians());
         assert!(true);
