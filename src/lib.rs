@@ -113,11 +113,10 @@ pub fn parse_input() -> Result<HashMap<String, String>, Error> {
 }
 
 impl HorizontalCurve {
-    pub fn create(given: Result<HashMap<String, String>, Error>) -> Result<HorizontalCurve, Error> { //
-        let mut given = given?;
-        if !given.contains_key("Da") {
-            given.insert("Da".to_string(), radius_to_da(given.get("R").expect("missing R (radius) or Da")));
-        }
+    pub fn create(pre_given: Result<HashMap<String, String>, Error>) -> Result<HorizontalCurve, Error> { //
+        let mut pre_given = pre_given?;
+        let given = HorizontalCurve::nudge_create(&mut pre_given);
+
         let da = given.get("Da").unwrap();
         let i = given.get("I").unwrap();
         let pi = given.get("PI").unwrap();
@@ -140,6 +139,27 @@ impl HorizontalCurve {
         };
 
         Ok(HorizontalCurve {dimensions, stations})
+    }
+
+    pub fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
+        if !given.contains_key("Da") {
+            given.insert("Da".to_string(), radius_to_da(given.get("R").expect("missing R (radius) or Da")));
+        }
+        if !given.contains_key("PI") { //given R, Da, I
+            if given.contains_key("PC") {
+                let value = calc_pi_from_pc(given.get("I").unwrap(), given.get("R").unwrap(), given.get("PC").unwrap());
+
+                given.insert("PI".to_string(), value);
+            } else if given.contains_key("PT") {
+                let value = calc_pi_from_pt(given.get("I").unwrap(), given.get("R").unwrap(), given.get("PT").unwrap());
+
+                given.insert("PI".to_string(), value);
+            } else {
+                panic!("input doesn't contain PC, PI, PT");   
+            }
+        }
+
+        given
     }
 }
 
@@ -185,3 +205,5 @@ pub fn parse_table(sight_type: SightType) -> Result<HashMap<i32, Vec<f64>>, Erro
     //arguments.insert(2, [32.0,36.0]);
     Ok(arguments)
 }
+
+

@@ -2,7 +2,7 @@
 **Horizontal Alignment**\
 learn how to do proper error handling\
 integrate the details of the tables\
-parse tables into memory 1?
+I want to give create a pc, radius, (pi, pt, Angle typed), is_tangent, and get a working curve.
 
 **Vertical Alignment**
 

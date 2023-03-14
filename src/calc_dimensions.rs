@@ -77,4 +77,28 @@ pub mod calc_horizontal_dimensions {
         let val = DMS::from_decimal_degrees(5729.58/radius, false);
         (val.degrees).to_string()+"d"+&(val.minutes).to_string()+"'"+&(val.seconds).to_string()+"\""
     }
+
+    pub fn calc_pi_from_pc(i: &str, r: &str, pc: &str) -> String {
+        let i = Angle::create_dms(i).to_radians().value();
+        let radius = r.parse::<f64>().unwrap();
+        let tangent_distance = radius*(i/2.0).tan();
+        let pc: Vec<f64> = pc.split('+').map(|x| x.parse::<f64>().unwrap()).collect();
+        let pc_value = pc[0]*100.0+pc[1]; //todo!(panic if pi[1] is 100 or greater || pi[2] exists)
+        let pi_value_left = ((pc_value+tangent_distance)/100.0).trunc();
+        let pi_value_right = ((pc_value+tangent_distance)/100.0).fract(); 
+
+        pi_value_left.to_string()+"+"+&pi_value_right.to_string()
+    }
+                
+    pub fn calc_pi_from_pt(i: &str, r: &str, pt: &str) -> String {
+        let i = Angle::create_dms(i).to_radians().value();
+        let radius = r.parse::<f64>().unwrap();
+        let tangent_distance = radius*(i/2.0).tan();
+        let pt: Vec<f64> = pt.split('+').map(|x| x.parse::<f64>().unwrap()).collect();
+        let pt_value = pt[0]*100.0+pt[1]; //todo!(panic if pi[1] is 100 or greater || pi[2] exists)
+        let pt_value_left = ((pt_value-tangent_distance)/100.0).trunc();
+        let pt_value_right = ((pt_value-tangent_distance)/100.0).fract(); 
+
+        pt_value_left.to_string()+"+"+&pt_value_right.to_string()
+    }
 }
