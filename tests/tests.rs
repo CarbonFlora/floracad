@@ -1,7 +1,11 @@
 #[cfg(test)]
 mod tests {
-    use horizontal_alignment::{*};
-    use dms_coordinates::{DMS, Bearing::*};
+    use dms_coordinates::{DMS};
+    use horizontal_alignment::parse_input;
+    use horizontal_alignment::angle_system::Angle;
+    use horizontal_alignment::horizontal_create::SightType;
+    use dms_coordinates::Bearing::*;
+    use horizontal_alignment::horizontal_create::{HorizontalCurve, parse_table, calc_min_sight_distance};
 
     #[test]
     fn it_works() {
