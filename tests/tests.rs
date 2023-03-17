@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use dms_coordinates::{DMS};
-    use horizontal_alignment::parse_input;
+    use horizontal_alignment::{parse_input, vertical_create::VerticalCurve};
     use horizontal_alignment::angle_system::Angle;
     use horizontal_alignment::horizontal_create::SightType;
     use dms_coordinates::Bearing::*;
@@ -48,14 +48,14 @@ mod tests {
         assert!(true);
     }
 
-    #[test]
-    fn build_ha() {
-        let horizontal_alignment_1 = HorizontalCurve::create(parse_input());
+    // #[test]
+    // fn build_ha() {
+    //     let horizontal_alignment_1 = HorizontalCurve::create(parse_input());
         
-        println!("{:#?}", parse_input());
-        println!("{:#?}", horizontal_alignment_1);
-        assert!(true);
-    }
+    //     println!("{:#?}", parse_input());
+    //     println!("{:#?}", horizontal_alignment_1);
+    //     assert!(true);
+    // }
 
     #[test]
     fn parse_table_1() {
@@ -94,4 +94,16 @@ mod tests {
         }
         assert!(true);
     } //currently I think errors should just spit out into eprintln! rather than Error or panic variants. 
+
+//
+
+    #[test]
+    fn vertical_alignment_1() {
+        let vertical_alignment_1 = VerticalCurve::create(parse_input());
+        
+        println!("{:#?}", parse_input());
+        println!("{:#?}", vertical_alignment_1);
+        assert!(false);
+    }
+
 }

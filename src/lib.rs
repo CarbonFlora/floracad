@@ -1,8 +1,10 @@
 #![allow(dead_code, unused_variables)]
 
 pub mod horizontal_calculation;
+pub mod vertical_calculation;
 pub mod angle_system;
 pub mod horizontal_create;
+pub mod vertical_create;
 
 //use eqsolver::single_variable::FDNewton;
 use std::collections::HashMap;
