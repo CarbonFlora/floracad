@@ -7,6 +7,15 @@ mod tests {
     use dms_coordinates::Bearing::*;
     use horizontal_alignment::horizontal_create::{HorizontalCurve, parse_table, calc_min_sight_distance};
 
+// Horizontal Alignment Tests
+
+    #[test]
+    fn ha_generate() {
+        let horizontal_alignment = HorizontalCurve::create(parse_input("./tests/inputs/HA/input_R_I_PC.md")).expect("failed to create a horizontal curve.");
+        assert!(true);
+        dbg!(horizontal_alignment);
+    }
+
     #[test]
     fn test_dms() {
         let dd_value = 15.0169444444444;
@@ -17,87 +26,92 @@ mod tests {
 
     #[test]
     fn test_to_dms() {
-        let rad = Angle::Radians(1.0);
-        let dd_value = Angle::DecimalDegrees(1.4687);
-        println!("{:?}", rad.to_dms());
-        println!("{:?}", dd_value.to_dms());
-        assert!(true);
+        let rad = Angle::Radians(1.0).to_dms();
+        let dd_value = Angle::DecimalDegrees(1.4687).to_dms();
+        assert!(matches!(rad, Angle::Dms(DMS { degrees: 57, minutes: 17, seconds: _, bearing: East })));
+        assert!(matches!(dd_value, Angle::Dms(DMS { degrees: 1, minutes: 28, seconds: _, bearing: East })));
+        dbg!(rad);
+        dbg!(dd_value);
     }
 
     #[test]
     fn test_to_dd() {
-        let rad = Angle::Radians(1.0);
-        let dms_1 = Angle::Dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East});
-        println!("{:?}", rad.to_decimal_degrees());
-        println!("{:?}", dms_1.to_decimal_degrees());
-        assert!(true);
+        let rad = Angle::Radians(1.0).to_decimal_degrees().value();
+        let dms_1 = Angle::Dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East}).to_decimal_degrees().value();
+        assert_eq!(rad, 57.29577951308232);
+        assert_eq!(dms_1, 15.016944444444444);
+        dbg!(rad);
+        dbg!(dms_1);
     }
 
     #[test]
     fn test_to_radians() {
-        let dd_value = Angle::DecimalDegrees(1.0);
-        let dms_1 = Angle::Dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East});
-        println!("{:?}", dd_value.to_radians());
-        println!("{:?}", dms_1.to_radians());
-        assert!(true);
+        let dd_value = Angle::DecimalDegrees(1.0).to_radians().value();
+        let dms_1 = Angle::Dms(DMS{degrees: 15, minutes: 1, seconds: 1.0, bearing: East}).to_radians().value();
+        assert_eq!(dd_value, 0.017453292519943295);
+        assert_eq!(dms_1, 0.26209512414462627);
+        dbg!(dd_value);
+        dbg!(dms_1);
     }
-
-    // #[test]
-    // fn build_ha() {
-    //     let horizontal_alignment_1 = HorizontalCurve::create(parse_input());
-        
-    //     println!("{:#?}", parse_input());
-    //     println!("{:#?}", horizontal_alignment_1);
-    //     assert!(true);
-    // }
 
     #[test]
     fn parse_table_1() {
         let ex1 = parse_table(SightType::Stopping);
-
-        println!("{:#?}", ex1);
-        assert!(true);
+        if let Ok(table) = ex1 {
+            assert_eq!(table.len(), 15);
+            dbg!(table);
+        } else {
+            println!("{:#?}", ex1);
+            assert!(false);
+        }
     }
 
     #[test]
     fn min_sight_distance_1() {
         let stopping_table = parse_table(SightType::Stopping);
-        if let Ok(stopping_table) = stopping_table {
-            let ex1 = calc_min_sight_distance(stopping_table, 65, SightType::Stopping, false);
-            println!("design sight distance: {:#?}", ex1);
+        if let Ok(table) = stopping_table {
+            let ex1 = calc_min_sight_distance(table, 65, SightType::Stopping, false).expect("Failed to calculate minimum sight distance.");
+            assert_eq!(ex1, 660.0);
+            dbg!(ex1);
+        } else {
+            println!("{:#?}", stopping_table);
+            assert!(false);
         }
-        assert!(true);
     }
 
     #[test]
     fn min_sight_distance_2() {
         let stopping_table = parse_table(SightType::Passing);
-        if let Ok(stopping_table) = stopping_table {
-            let ex1 = calc_min_sight_distance(stopping_table, 30, SightType::Passing, false);
-            println!("design sight distance: {:#?}", ex1);
+        if let Ok(table) = stopping_table {
+            let ex1 = calc_min_sight_distance(table, 30, SightType::Passing, false).expect("Failed to calculate minimum sight distance.");
+            assert_eq!(ex1, 1100.0);
+            dbg!(ex1);
+        } else {
+            println!("{:#?}", stopping_table);
+            assert!(false);
         }
-        assert!(true);
     }
 
     #[test]
     fn min_sight_distance_3() {
         let stopping_table = parse_table(SightType::Decision);
-        if let Ok(stopping_table) = stopping_table {
-            let ex1 = calc_min_sight_distance(stopping_table, 80, SightType::Decision, false);
-            println!("design sight distance: {:#?}", ex1);
+        if let Ok(table) = stopping_table {
+            let ex1 = calc_min_sight_distance(table, 80, SightType::Decision, false).expect("Failed to calculate minimum sight distance.");
+            assert_eq!(ex1, 1260.0);
+            dbg!(ex1);
+        } else {
+            println!("{:#?}", stopping_table);
+            assert!(false);
         }
-        assert!(true);
-    } //currently I think errors should just spit out into eprintln! rather than Error or panic variants. 
+    }
 
 // Vertical Alignment Tests
 
     #[test]
-    fn vertical_alignment_1() {
-        let vertical_alignment_1 = VerticalCurve::create(parse_input());
-        
-        println!("{:#?}", parse_input());
-        println!("{:#?}", vertical_alignment_1);
+    fn va_generate() {
+        let vertical_alignment = VerticalCurve::create(parse_input("./tests/inputs/VA/input_1.md")).expect("failed to create a vertical curve.");
         assert!(true);
+        dbg!(vertical_alignment);
     }
 
 }
