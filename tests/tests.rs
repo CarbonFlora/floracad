@@ -10,8 +10,22 @@ mod tests {
 // Horizontal Alignment Tests
 
     #[test]
-    fn ha_generate() {
-        let horizontal_alignment = HorizontalCurve::create(parse_input("./tests/inputs/HA/input_R_I_PC.md")).expect("failed to create a horizontal curve.");
+    fn ha_generate_1() {
+        let horizontal_alignment = HorizontalCurve::create(parse_input("./tests/inputs/HA/input_1.md")).expect("failed to create a horizontal curve.");
+        assert!(true);
+        dbg!(horizontal_alignment);
+    }
+
+    #[test]
+    fn ha_generate_2() {
+        let horizontal_alignment = HorizontalCurve::create(parse_input("./tests/inputs/HA/input_2.md")).expect("failed to create a horizontal curve.");
+        assert!(true);
+        dbg!(horizontal_alignment);
+    }
+
+    #[test]
+    fn ha_generate_3() {
+        let horizontal_alignment = HorizontalCurve::create(parse_input("./tests/inputs/HA/input_3.md")).expect("failed to create a horizontal curve.");
         assert!(true);
         dbg!(horizontal_alignment);
     }
