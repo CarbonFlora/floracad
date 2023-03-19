@@ -122,10 +122,36 @@ mod tests {
 // Vertical Alignment Tests
 
     #[test]
-    fn va_generate() {
+    fn va_generate_1() {
         let vertical_alignment = VerticalCurve::create(parse_input("./tests/inputs/VA/input_1.md")).expect("failed to create a vertical curve.");
         assert!(true);
         dbg!(vertical_alignment);
+    }
+
+    #[test]
+    fn va_generate_2() {
+        let vertical_alignment = VerticalCurve::create(parse_input("./tests/inputs/VA/input_2.md")).expect("failed to create a vertical curve.");
+        assert!(true);
+        dbg!(vertical_alignment);
+    }
+
+    #[test]
+    fn va_generate_3() {
+        let vertical_alignment = VerticalCurve::create(parse_input("./tests/inputs/VA/input_3.md")).expect("failed to create a vertical curve.");
+        assert!(true);
+        dbg!(vertical_alignment);
+    }
+
+    #[test]
+    fn va_generate_compare() {
+        let vertical_alignment = VerticalCurve::create(parse_input("./tests/inputs/VA/input_1.md")).expect("failed to create a vertical curve.");
+        let vertical_alignment_2 = VerticalCurve::create(parse_input("./tests/inputs/VA/input_2.md")).expect("failed to create a vertical curve.");
+        let vertical_alignment_3 = VerticalCurve::create(parse_input("./tests/inputs/VA/input_3.md")).expect("failed to create a vertical curve.");
+        assert!(matches!(&vertical_alignment, _vertical_alignment_2));
+        assert!(matches!(&vertical_alignment, _vertical_alignment_3));
+        dbg!(vertical_alignment);
+        dbg!(vertical_alignment_2);
+        dbg!(vertical_alignment_3);
     }
 
 }

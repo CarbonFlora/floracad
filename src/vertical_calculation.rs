@@ -52,3 +52,40 @@ pub fn calc_pvt(pvi_station: &str, pvi_elevation: &str, curve_length: &str, g2: 
 
     Station {value: pvi_value+curve_length/2.0, elevation: elevation_value}
 } 
+
+pub fn calc_station_pvi_from_pvc(pvc_station: &str, curve_length: &str) -> String {
+    let curve_length = curve_length.parse::<f64>().unwrap();
+    let pvc: Vec<f64> = pvc_station.split('+').map(|x| x.parse::<f64>().unwrap()).collect();
+    let pvc_value = pvc[0]*100.0+pvc[1]; //todo!(panic if pi[1] is 100 or greater || pi[2] exists)
+    let pvi_value_left = ((pvc_value+curve_length/2.0)/100.0).trunc();
+    let pvi_value_right = ((pvc_value+curve_length/2.0)/100.0).fract(); 
+
+    pvi_value_left.to_string()+"+"+&pvi_value_right.to_string()
+}
+
+pub fn calc_station_pvi_from_pvt(pvt_station: &str, curve_length: &str) -> String {
+    let curve_length = curve_length.parse::<f64>().unwrap();
+    let pvt: Vec<f64> = pvt_station.split('+').map(|x| x.parse::<f64>().unwrap()).collect();
+    let pvt_value = pvt[0]*100.0+pvt[1]; //todo!(panic if pi[1] is 100 or greater || pi[2] exists)
+    let pvi_value_left = ((pvt_value+curve_length/2.0)/100.0).trunc();
+    let pvi_value_right = ((pvt_value+curve_length/2.0)/100.0).fract(); 
+
+    pvi_value_left.to_string()+"+"+&pvi_value_right.to_string()
+}
+
+pub fn calc_elevation_pvi_from_pvc(pvc_elevation: &str, curve_length: &str, g1: &str) -> String {
+    dbg!(&pvc_elevation);
+    let pvc_elevation = pvc_elevation.parse::<f64>().expect("Configure PVC elevation properly.");
+    let curve_length = calc_curve_length_vertical(curve_length);
+    let g1 = g1.parse::<f64>().unwrap();
+    
+    (pvc_elevation+g1*curve_length/2.0).to_string()
+}
+
+pub fn calc_elevation_pvi_from_pvt(pvt_elevation: &str, curve_length: &str, g2: &str) -> String {
+    let pvt_elevation = pvt_elevation.parse::<f64>().expect("Configure PVT elevation properly.");
+    let curve_length = calc_curve_length_vertical(curve_length);
+    let g2 = g2.parse::<f64>().unwrap();
+    
+    (pvt_elevation-g2*curve_length/2.0).to_string()
+}

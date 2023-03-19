@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io::{BufReader, BufRead, Error};
 use std::fs::File;
-use crate::angle_system::Angle;
+//use crate::angle_system::Angle;
 use crate::vertical_calculation::*;
 
 #[derive(Debug)]
@@ -39,9 +39,8 @@ pub struct VerticalDimensions {
 
 impl VerticalCurve {
     pub fn create(pre_given: Result<HashMap<String, String>, Error>) -> Result<VerticalCurve, Error> { //http://www.sd-w.com/channel_flow/vertical_curves/
-        let pre_given = pre_given?;
-        let given = pre_given;
-        //let given = HorizontalCurve::nudge_create(&mut pre_given); //todo!()
+        let mut pre_given = pre_given?;
+        let given = VerticalCurve::nudge_create(&mut pre_given);
 
         let pvi_station = given.get("PVI-st").unwrap();
         let pvi_elevation = given.get("PVI-elev").unwrap();
@@ -66,26 +65,40 @@ impl VerticalCurve {
         Ok(VerticalCurve {dimensions, stations})
     }
 
-    // pub fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
-    //     if !given.contains_key("Da") {
-    //         given.insert("Da".to_string(), radius_to_da(given.get("R").expect("missing R (radius) or Da")));
-    //     }
-    //     if !given.contains_key("PI") { //given R, Da, I
-    //         if given.contains_key("PC") {
-    //             let value = calc_pi_from_pc(given.get("I").unwrap(), given.get("R").unwrap(), given.get("PC").unwrap());
+    pub fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
+        // if !given.contains_key("Da") {
+        //     given.insert("Da".to_string(), radius_to_da(given.get("R").expect("missing R (radius) or Da")));
+        // }
+        if !given.contains_key("PVI-st") {
+            if given.contains_key("PVC-st") {
+                let value = calc_station_pvi_from_pvc(given.get("PVC-st").unwrap(), given.get("length").unwrap());
 
-    //             given.insert("PI".to_string(), value);
-    //         } else if given.contains_key("PT") {
-    //             let value = calc_pi_from_pt(given.get("I").unwrap(), given.get("R").unwrap(), given.get("PT").unwrap());
+                given.insert("PVI-st".to_string(), value);
+            } else if given.contains_key("PVT-st") {
+                let value = calc_station_pvi_from_pvt(given.get("PVT-st").unwrap(), given.get("length").unwrap());
 
-    //             given.insert("PI".to_string(), value);
-    //         } else {
-    //             panic!("input doesn't contain PC, PI, PT");   
-    //         }
-    //     }
-    //
-    //    given
-    //}
+                given.insert("PVI-st".to_string(), value);
+            } else {
+                panic!("input doesn't contain a noted station.");   
+            }
+        }
+
+        if !given.contains_key("PVI-elev") {
+            if given.contains_key("PVC-elev") {
+                let value = calc_elevation_pvi_from_pvc(given.get("PVC-elev").unwrap(), given.get("length").unwrap(), given.get("inc").unwrap());
+
+                given.insert("PVI-elev".to_string(), value);
+            } else if given.contains_key("PVT-elev") {
+                let value = calc_elevation_pvi_from_pvt(given.get("PVT-elev").unwrap(), given.get("length").unwrap(), given.get("out").unwrap());
+
+                given.insert("PVI-elev".to_string(), value);
+            } else {
+                panic!("input doesn't contain a noted elevation.");   
+            }
+        }
+    
+       given
+    }
 }
 
 #[derive(Debug)]
