@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod tests {
     use dms_coordinates::{DMS};
-    use horizontal_alignment::{parse_input, vertical_create::VerticalCurve};
-    use horizontal_alignment::angle_system::Angle;
-    use horizontal_alignment::horizontal_create::SightType;
+    use floracad::{parse_input, vertical_create::VerticalCurve};
+    use floracad::angle_system::Angle;
+    use floracad::horizontal_create::SightType;
     use dms_coordinates::Bearing::*;
-    use horizontal_alignment::horizontal_create::{HorizontalCurve, parse_table, calc_min_sight_distance};
+    use floracad::horizontal_create::{HorizontalCurve, parse_table, calc_min_sight_distance};
 
 // Horizontal Alignment Tests
 
