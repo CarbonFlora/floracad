@@ -60,7 +60,7 @@ impl HorizontalCurve {
         Ok(HorizontalCurve {dimensions, stations})
     }
 
-    pub fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
+    fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
         if !given.contains_key("Da") {
             given.insert("Da".to_string(), radius_to_da(given.get("R").expect("missing R (radius) or Da")));
         }
