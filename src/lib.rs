@@ -5,8 +5,8 @@ pub mod vertical_calculation;
 pub mod angle_system;
 pub mod horizontal_create;
 pub mod vertical_create;
+pub mod sight_distance;
 
-//use eqsolver::single_variable::FDNewton;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, BufRead, Error};
