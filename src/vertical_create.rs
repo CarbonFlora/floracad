@@ -33,8 +33,7 @@ pub struct VerticalDimensions {
     pub outgoing_grade: f64,
     pub curve_length: f64,
     external: f64,
-    long_chord: f64,
-    sight_distance: Option<f64>,
+    pub sight_distance: Option<f64>,
 }
 
 impl VerticalCurve {
@@ -53,7 +52,6 @@ impl VerticalCurve {
             outgoing_grade: calc_outgoing_grade(outgoing_grade),
             curve_length: calc_curve_length_vertical(curve_length),
             external: calc_external_vertical(incoming_grade, outgoing_grade, curve_length),
-            long_chord: calc_long_chord_vertical(), //todo!()
             sight_distance: None,
         };
         let stations = VerticalStations { 
@@ -61,8 +59,15 @@ impl VerticalCurve {
             pvi: calc_pvi(pvi_station, pvi_elevation),  
             pvt: calc_pvt(pvi_station, pvi_elevation, curve_length, dimensions.outgoing_grade), //pvt = pvc + curve_length
         };
+        let mut curve = VerticalCurve {dimensions, stations};
+        curve.dimensions.sight_distance = Some(curve.calc_va_sight_distance());
+        if curve.examine_functional().values().all(|b| *b) {
+            println!("Curve passes all relevant inspections.");
+        } else {
+            println!("Curve fails all relevant inspections.");
+        }
 
-        Ok(VerticalCurve {dimensions, stations})
+        Ok(curve)
     }
 
     fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
@@ -98,5 +103,50 @@ impl VerticalCurve {
         }
     
        given
+    }
+
+    pub fn examine_functional(&self) -> HashMap<&str, bool> {
+        let mut tests = HashMap::new();
+        tests.insert("sight_distance", self.is_within_minimum_sight_distance());
+        
+        tests
+    }
+
+    fn is_within_minimum_sight_distance(&self) -> bool {
+        false //todo!()
+    }
+
+    //from HDM, assuming 3.5 ft driver eye height, 0.5ft obstruction height.
+    fn calc_va_sight_distance(&self) -> f64 { //untested! todo!()
+        let grade_diff = (self.dimensions.outgoing_grade-self.dimensions.incoming_grade).abs();
+        let curve_length = self.dimensions.curve_length;
+        
+        if self.dimensions.incoming_grade > self.dimensions.outgoing_grade { //crest curve handling
+            let eq_sight_1 = ((grade_diff*curve_length+1329.0)/(2.0*grade_diff)).abs(); //fails on no grade difference.
+            let eq_sight_2 = (1329.0f64.sqrt()*curve_length.sqrt()/grade_diff.sqrt()).abs(); //fails on no grade difference.
+            // dbg!(&eq_sight_1);
+            // dbg!(&eq_sight_2);
+            if eq_sight_1 > curve_length {
+                return eq_sight_1;
+            } else if eq_sight_2 < curve_length {
+                return eq_sight_2;
+            } else {
+                panic!("vertical curve crest curve handling failed.");
+            }
+        } else if self.dimensions.incoming_grade < self.dimensions.outgoing_grade {
+            let eq_sight_1 = ((2.0*(grade_diff*curve_length+400.0))/(4.0*grade_diff-7.0)).abs();
+            let eq_sight_2 = ((1600.0*curve_length.sqrt())/((6400.0*grade_diff+49.0*curve_length).sqrt()+7.0*curve_length.sqrt())).abs();
+            dbg!(&eq_sight_1);
+            dbg!(&eq_sight_2);
+            if eq_sight_1 > curve_length {
+                return eq_sight_1;
+            } else if eq_sight_2 < curve_length {
+                return eq_sight_2;
+            } else {
+                panic!("vertical curve sag curve handling failed.");
+            }
+        } else {
+            panic!("failed stopping sight distance calculations.");
+        }
     }
 }

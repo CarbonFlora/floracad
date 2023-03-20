@@ -1,12 +1,11 @@
 #[cfg(test)]
 mod tests {
     use dms_coordinates::{DMS};
-    use floracad::sight_distance::calc_va_sight_distance;
+    use floracad::sight_distance::*;
     use floracad::{parse_input, vertical_create::VerticalCurve};
     use floracad::angle_system::Angle;
-    use floracad::horizontal_create::SightType;
     use dms_coordinates::Bearing::*;
-    use floracad::horizontal_create::{HorizontalCurve, parse_table, calc_min_sight_distance};
+    use floracad::horizontal_create::HorizontalCurve;
 
 // Horizontal Alignment Tests
 
@@ -156,12 +155,20 @@ mod tests {
     }
 
     #[test]
-    fn sight_dist_1() {
+    fn sight_dist_1() { //crest 
         let vertical_alignment = VerticalCurve::create(parse_input("./tests/inputs/VA/input_1.md")).expect("failed to create a vertical curve.");
-        let sight = calc_va_sight_distance(&vertical_alignment);
+        let sight = vertical_alignment.dimensions.sight_distance.unwrap();
         assert_eq!(sight, 17636.84210526316);
         dbg!(sight);
         dbg!(vertical_alignment);
     }
 
+    #[test]
+    fn sight_dist_4() { //sag
+        let vertical_alignment = VerticalCurve::create(parse_input("./tests/inputs/VA/input_4.md")).expect("failed to create a vertical curve.");
+        let sight = vertical_alignment.dimensions.sight_distance.unwrap();
+        assert_eq!(sight, 113.54895061791827);
+        dbg!(sight);
+        dbg!(vertical_alignment);
+    }
 }

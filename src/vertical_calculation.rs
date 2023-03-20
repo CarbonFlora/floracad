@@ -89,3 +89,7 @@ pub fn calc_elevation_pvi_from_pvt(pvt_elevation: &str, curve_length: &str, g2: 
     
     (pvt_elevation-g2*curve_length/2.0).to_string()
 }
+
+pub fn is_within_minimum_sight_distance() -> bool {
+    false
+}

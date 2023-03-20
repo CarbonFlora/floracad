@@ -7,6 +7,7 @@ we can have a suite of functions for hori and vert that can calc values along th
 add the x Distance function for VA.
 **Vertical Alignment**
 add more measurements to VA create using figure 204.4 of the CalTrans HDM
+work on testing if VA is within spec.
 
 **Cross Sections**
 
