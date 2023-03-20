@@ -5,7 +5,7 @@ use std::fs::File;
 //use crate::horizontal_create::HorizontalCurve;
 //use crate::vertical_create::VerticalCurve;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum SightType {
     Stopping,
     Passing,

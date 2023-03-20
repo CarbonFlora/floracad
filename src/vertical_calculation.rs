@@ -21,10 +21,6 @@ pub fn calc_external_vertical(g1: &str, g2: &str, curve_length: &str) -> f64 {
     a*(curve_length/2.0).powf(2.0)
 }
 
-pub fn calc_long_chord_vertical() -> f64 {
-    1.0
-}
-
 pub fn calc_pvc(pvi_station: &str, pvi_elevation: &str, curve_length: &str, g1: f64) -> Station {
     let pvi_station: Vec<f64> = pvi_station.split('+').map(|x| x.parse::<f64>().unwrap()).collect();
     let pvi_value = pvi_station[0]*100.0+pvi_station[1];

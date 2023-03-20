@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::io::{BufReader, BufRead, Error};
 use std::fs::File;
+use crate::sight_distance::{calc_min_sight_distance, SightType, parse_table};
 //use crate::angle_system::Angle;
 use crate::vertical_calculation::*;
 
@@ -61,7 +62,7 @@ impl VerticalCurve {
         };
         let mut curve = VerticalCurve {dimensions, stations};
         curve.dimensions.sight_distance = Some(curve.calc_va_sight_distance());
-        if curve.examine_functional().values().all(|b| *b) {
+        if curve.examine_functional(SightType::Stopping, 65, false).values().all(|b| *b) { //todo!() make interact
             println!("Curve passes all relevant inspections.");
         } else {
             println!("Curve fails all relevant inspections.");
@@ -105,15 +106,25 @@ impl VerticalCurve {
        given
     }
 
-    pub fn examine_functional(&self) -> HashMap<&str, bool> {
+    pub fn examine_functional(&self, sight_type: SightType, design_speed: i32, sustained_downgrade: bool) -> HashMap<&str, bool> {
         let mut tests = HashMap::new();
-        tests.insert("sight_distance", self.is_within_minimum_sight_distance());
+        tests.insert("sight_distance", self.is_within_minimum_sight_distance(sight_type, design_speed, sustained_downgrade));
         
         tests
     }
 
-    fn is_within_minimum_sight_distance(&self) -> bool {
-        false //todo!()
+    fn is_within_minimum_sight_distance(&self, sight_type: SightType, design_speed: i32, sustained_downgrade: bool) -> bool {
+        let table = parse_table(sight_type).expect("table borked.");
+        if let Ok(sight_dist_min) = calc_min_sight_distance(table, design_speed, sight_type, sustained_downgrade) {
+            if let Some(sight_dist_actual) = self.dimensions.sight_distance {
+                if sight_dist_actual >= sight_dist_min {
+                    return true;
+                }
+            } else {
+                panic!("calculate sight distance before using this function.")
+            }
+        }
+        false
     }
 
     //from HDM, assuming 3.5 ft driver eye height, 0.5ft obstruction height.
