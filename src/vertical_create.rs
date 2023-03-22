@@ -1,34 +1,31 @@
 use std::collections::HashMap;
-use std::io::{BufReader, BufRead, Error};
+use std::io::{BufReader, BufRead, Error, ErrorKind};
 use std::fs::File;
 use crate::sight_distance::{calc_min_sight_distance, SightType, parse_table};
 //use crate::angle_system::Angle;
 use crate::vertical_calculation::*;
+use crate::sight_distance::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct VerticalCurve {
     pub dimensions: VerticalDimensions,
     pub stations: VerticalStations,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Station {
     pub value: f64,
     pub elevation: f64,
 }
 
-impl Station {
-    
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct VerticalStations {
     pvc: Station, 
     pvi: Station,
     pvt: Station,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct VerticalDimensions {
     pub incoming_grade: f64,
     pub outgoing_grade: f64,
@@ -60,15 +57,17 @@ impl VerticalCurve {
             pvi: calc_pvi(pvi_station, pvi_elevation),  
             pvt: calc_pvt(pvi_station, pvi_elevation, curve_length, dimensions.outgoing_grade), //pvt = pvc + curve_length
         };
+
         let mut curve = VerticalCurve {dimensions, stations};
-        curve.dimensions.sight_distance = Some(curve.calc_va_sight_distance());
-        if curve.examine_functional(SightType::Stopping, 65, false).values().all(|b| *b) { //todo!() make interact
+        curve.dimensions.sight_distance = Some(curve.calc_sight_distance());
+        
+        if Curve::VerticalCurve(curve).examine_functional(SightType::Stopping, 65, false).values().all(|b| *b) { //todo!() make interact
             println!("Curve passes all relevant inspections.");
         } else {
             println!("Curve fails all relevant inspections.");
         }
-
         Ok(curve)
+        //Err(Error::new(ErrorKind::Other, "sight distance functions configured incorrectly."))
     }
 
     fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
@@ -102,41 +101,19 @@ impl VerticalCurve {
                 panic!("input doesn't contain a noted elevation.");   
             }
         }
-    
        given
-    }
-
-    pub fn examine_functional(&self, sight_type: SightType, design_speed: i32, sustained_downgrade: bool) -> HashMap<&str, bool> {
-        let mut tests = HashMap::new();
-        tests.insert("sight_distance", self.is_within_minimum_sight_distance(sight_type, design_speed, sustained_downgrade));
-        
-        tests
-    }
-
-    fn is_within_minimum_sight_distance(&self, sight_type: SightType, design_speed: i32, sustained_downgrade: bool) -> bool {
-        let table = parse_table(sight_type).expect("table borked.");
-        if let Ok(sight_dist_min) = calc_min_sight_distance(table, design_speed, sight_type, sustained_downgrade) {
-            if let Some(sight_dist_actual) = self.dimensions.sight_distance {
-                if sight_dist_actual >= sight_dist_min {
-                    return true;
-                }
-            } else {
-                panic!("calculate sight distance before using this function.")
-            }
-        }
-        false
-    }
+    }    
 
     //from HDM, assuming 3.5 ft driver eye height, 0.5ft obstruction height.
-    fn calc_va_sight_distance(&self) -> f64 { //untested! todo!()
+    fn calc_sight_distance(&self) -> f64 { //untested! todo!()
         let grade_diff = (self.dimensions.outgoing_grade-self.dimensions.incoming_grade).abs();
         let curve_length = self.dimensions.curve_length;
         
         if self.dimensions.incoming_grade > self.dimensions.outgoing_grade { //crest curve handling
             let eq_sight_1 = ((grade_diff*curve_length+1329.0)/(2.0*grade_diff)).abs(); //fails on no grade difference.
             let eq_sight_2 = (1329.0f64.sqrt()*curve_length.sqrt()/grade_diff.sqrt()).abs(); //fails on no grade difference.
-            // dbg!(&eq_sight_1);
-            // dbg!(&eq_sight_2);
+            dbg!(&eq_sight_1);
+            dbg!(&eq_sight_2);
             if eq_sight_1 > curve_length {
                 return eq_sight_1;
             } else if eq_sight_2 < curve_length {

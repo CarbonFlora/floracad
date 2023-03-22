@@ -6,7 +6,7 @@ use crate::horizontal_calculation::*;
 
 #[derive(Debug)]
 pub struct HorizontalCurve {
-    dimensions: HorizontalDimensions,
+    pub dimensions: HorizontalDimensions,
     stations: HorizontalStations,
 }
 
@@ -28,7 +28,7 @@ pub struct HorizontalDimensions {
     external: f64,
     curve_length_100: Angle, //(Da)
     curve_angle: Angle, //radians (I)
-    sight_distance: Option<f64>,
+    pub sight_distance: Option<f64>,
 }
 
 impl HorizontalCurve {
