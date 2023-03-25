@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-use std::io::{BufReader, BufRead, Error, ErrorKind};
-use std::fs::File;
-use crate::sight_distance::{calc_min_sight_distance, SightType, parse_table};
+use std::io::{Error};
+use crate::sight_distance::{SightType};
 //use crate::angle_system::Angle;
 use crate::vertical_calculation::*;
 use crate::sight_distance::*;
