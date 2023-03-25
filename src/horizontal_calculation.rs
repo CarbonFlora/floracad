@@ -83,19 +83,21 @@ pub fn calc_pi_from_pc(i: &str, r: &str, pc: &str) -> String {
     let pc: Vec<f64> = pc.split('+').map(|x| x.parse::<f64>().unwrap()).collect();
     let pc_value = pc[0]*100.0+pc[1]; //todo!(panic if pi[1] is 100 or greater || pi[2] exists)
     let pi_value_left = ((pc_value+tangent_distance)/100.0).trunc();
-    let pi_value_right = ((pc_value+tangent_distance)/100.0).fract(); 
+    let pi_value_right = ((pc_value+tangent_distance)/100.0).fract()*100.0; 
 
     pi_value_left.to_string()+"+"+&pi_value_right.to_string()
 }
             
-pub fn calc_pi_from_pt(i: &str, r: &str, pt: &str) -> String {
-    let i = Angle::create_dms(i).to_radians().value();
+pub fn calc_pi_from_pt(i: &str, r: &str, pt: &str) -> String { //borked
+    let i2 = Angle::create_dms(i).to_radians().value();
     let radius = r.parse::<f64>().unwrap();
-    let tangent_distance = radius*(i/2.0).tan();
+    let da = radius_to_da(radius.to_string().as_str());
+    let curve_length = calc_curve_length(da.as_str(), i);
+    let tangent_distance = radius*(i2/2.0).tan();
     let pt: Vec<f64> = pt.split('+').map(|x| x.parse::<f64>().unwrap()).collect();
     let pt_value = pt[0]*100.0+pt[1]; //todo!(panic if pi[1] is 100 or greater || pi[2] exists)
-    let pt_value_left = ((pt_value-tangent_distance)/100.0).trunc();
-    let pt_value_right = ((pt_value-tangent_distance)/100.0).fract(); 
+    let pi_value_left = ((pt_value-curve_length+tangent_distance)/100.0).trunc();
+    let pi_value_right = ((pt_value-curve_length+tangent_distance)/100.0).fract()*100.0;
 
-    pt_value_left.to_string()+"+"+&pt_value_right.to_string()
+    pi_value_left.to_string()+"+"+&pi_value_right.to_string()
 }

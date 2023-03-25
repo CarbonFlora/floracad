@@ -68,9 +68,12 @@ impl Curve {
             match self {
                 Curve::HorizontalCurve(a) => {
                     if let Some(sight_dist_actual) = a.dimensions.sight_distance {
-                        if sight_dist_actual >= sight_dist_min {
+                        if a.dimensions.curve_length < sight_dist_actual {
+                            println!("curve length is greater than sight distance calculations.");
                             return true;
-                        }
+                        } else if sight_dist_actual >= sight_dist_min {
+                            return true;
+                        } 
                     }
                 },
                 Curve::VerticalCurve(a) => {

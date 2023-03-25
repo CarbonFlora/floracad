@@ -3,25 +3,26 @@ use std::io::{BufReader, BufRead, Error};
 use std::fs::File;
 use crate::angle_system::Angle;
 use crate::horizontal_calculation::*;
+use crate::sight_distance::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct HorizontalCurve {
     pub dimensions: HorizontalDimensions,
-    stations: HorizontalStations,
+    pub stations: HorizontalStations,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct HorizontalStations {
-    pc: f64, 
-    pi: f64,
-    pt: f64,
+    pub pc: f64, 
+    pub pi: f64,
+    pub pt: f64,
 
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct HorizontalDimensions {
     radius: f64,
-    curve_length: f64,
+    pub curve_length: f64,
     tangent_distance: f64,
     long_chord: f64,
     middle_ordinate: f64,
@@ -57,7 +58,16 @@ impl HorizontalCurve {
             pt: calc_pt(pi, dimensions.tangent_distance, dimensions.curve_length)
         };
 
-        Ok(HorizontalCurve {dimensions, stations})
+        let mut curve = HorizontalCurve {dimensions, stations};
+        curve.dimensions.sight_distance = Some(curve.calc_sight_distance());
+        
+        if Curve::HorizontalCurve(curve).examine_functional(SightType::Stopping, 65, false).values().all(|b| *b) { //todo!() make interact
+            println!("Curve passes all relevant inspections.");
+        } else {
+            println!("Curve fails all relevant inspections.");
+        }
+        Ok(curve)
+        //Ok(HorizontalCurve {dimensions, stations})
     }
 
     fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
@@ -79,5 +89,13 @@ impl HorizontalCurve {
         }
 
         given
+    }
+
+    fn calc_sight_distance(&self) -> f64 { //untested! todo!()
+        let radius = self.dimensions.radius;
+        let middle_ordinate = self.dimensions.middle_ordinate;
+
+        //dbg!(radius/28.65*(((radius-middle_ordinate)/radius).cos()));
+        radius/28.65*(((radius-middle_ordinate)/radius).acos().to_degrees())
     }
 }

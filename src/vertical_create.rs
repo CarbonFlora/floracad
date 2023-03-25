@@ -112,8 +112,8 @@ impl VerticalCurve {
         if self.dimensions.incoming_grade > self.dimensions.outgoing_grade { //crest curve handling
             let eq_sight_1 = ((grade_diff*curve_length+1329.0)/(2.0*grade_diff)).abs(); //fails on no grade difference.
             let eq_sight_2 = (1329.0f64.sqrt()*curve_length.sqrt()/grade_diff.sqrt()).abs(); //fails on no grade difference.
-            dbg!(&eq_sight_1);
-            dbg!(&eq_sight_2);
+            //dbg!(&eq_sight_1);
+            //dbg!(&eq_sight_2);
             if eq_sight_1 > curve_length {
                 return eq_sight_1;
             } else if eq_sight_2 < curve_length {
@@ -124,8 +124,8 @@ impl VerticalCurve {
         } else if self.dimensions.incoming_grade < self.dimensions.outgoing_grade {
             let eq_sight_1 = ((2.0*(grade_diff*curve_length+400.0))/(4.0*grade_diff-7.0)).abs();
             let eq_sight_2 = ((1600.0*curve_length.sqrt())/((6400.0*grade_diff+49.0*curve_length).sqrt()+7.0*curve_length.sqrt())).abs();
-            dbg!(&eq_sight_1);
-            dbg!(&eq_sight_2);
+            //dbg!(&eq_sight_1);
+            //dbg!(&eq_sight_2);
             if eq_sight_1 > curve_length {
                 return eq_sight_1;
             } else if eq_sight_2 < curve_length {

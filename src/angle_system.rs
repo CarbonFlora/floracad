@@ -2,7 +2,7 @@ use core::f64::consts::PI;
 use dms_coordinates::DMS;
 use dms_coordinates::Bearing::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Angle {
     DecimalDegrees (f64),
     Dms (DMS),
