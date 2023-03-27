@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 dms-coordinates = "1.1.0"
 eqsolver = "0.1.1"
+geo = "0.24.1"
+serde = "1.0.158"

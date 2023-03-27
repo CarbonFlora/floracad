@@ -6,6 +6,7 @@ pub mod angle_system;
 pub mod horizontal_create;
 pub mod vertical_create;
 pub mod sight_distance;
+pub mod coordinate_system;
 
 use std::collections::HashMap;
 use std::fs::File;
