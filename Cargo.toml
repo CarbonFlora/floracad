@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 dms-coordinates = "1.1.0"
+dxf = { version = "0.5.0", features = ["serialize"] }
 eqsolver = "0.1.1"
 geo = "0.24.1"
 serde = "1.0.158"
