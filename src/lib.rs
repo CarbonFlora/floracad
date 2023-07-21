@@ -9,9 +9,10 @@ pub mod sight_distance;
 
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, BufRead, Error};
+use std::io::{BufReader, BufRead};
+use anyhow::Result;
 
-pub fn parse_input(file_path: &str) -> Result<HashMap<String, String>, Error> {
+pub fn parse_text_file(file_path: &str) -> Result<HashMap<String, String>> {
     let input = File::open(file_path)?;
     let buffered = BufReader::new(input);
     let mut arguments = HashMap::new();

@@ -1,15 +1,9 @@
 use std::collections::HashMap;
-use std::io::{Error};
-use crate::sight_distance::{SightType};
-//use crate::angle_system::Angle;
+use anyhow::{Result, anyhow};
+
+use crate::sight_distance::SightType;
 use crate::vertical_calculation::*;
 use crate::sight_distance::*;
-
-#[derive(Debug, Clone, Copy)]
-pub struct VerticalCurve {
-    pub dimensions: VerticalDimensions,
-    pub stations: VerticalStations,
-}
 
 #[derive(Debug, Clone, Copy)]
 pub struct Station {
@@ -33,75 +27,71 @@ pub struct VerticalDimensions {
     pub sight_distance: Option<f64>,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct VerticalCurve {
+    pub dimensions: VerticalDimensions,
+    pub stations: VerticalStations,
+}
+
+pub enum VerticalDefinition {
+    PVI,
+    PVC,
+    PVT,
+}
+
 impl VerticalCurve {
-    pub fn create(pre_given: Result<HashMap<String, String>, Error>) -> Result<VerticalCurve, Error> { //http://www.sd-w.com/channel_flow/vertical_curves/
-        let mut pre_given = pre_given?;
-        let given = VerticalCurve::nudge_create(&mut pre_given);
+    fn define_vertical_curve(raw_hashmap: &HashMap<String, String>) -> Result<VerticalDefinition> {
+        match raw_hashmap {
+            x if x.contains_key("PVI-st") && x.contains_key("PVI-elev") => Ok(VerticalDefinition::PVI),
+            x if x.contains_key("PVC-st") && x.contains_key("PVC-elev") => Ok(VerticalDefinition::PVC),
+            x if x.contains_key("PVT-st") && x.contains_key("PVT-elev") => Ok(VerticalDefinition::PVT),
+            _ => Err(anyhow!(format!("Missing information to define a vertical curve.\nEx. PVI-st=8+90.33\n    PVI-elev=138.61"))),
+        }
+    }
 
-        let pvi_station = given.get("PVI-st").unwrap();
-        let pvi_elevation = given.get("PVI-elev").unwrap();
-        let incoming_grade = given.get("inc").unwrap();
-        let outgoing_grade = given.get("out").unwrap();
-        let curve_length = given.get("length").unwrap();
+    pub fn from_hashmap(raw_hashmap: &HashMap<String, String>) -> Result<VerticalCurve> {
+        let incoming_grade = raw_hashmap.get("inc").ok_or_else(|| anyhow!("Missing incoming grade."))?;
+        let outgoing_grade = raw_hashmap.get("out").ok_or_else(|| anyhow!("Missing outgoing grade."))?;
+        let curve_length = raw_hashmap.get("length").ok_or_else(|| anyhow!("Missing length."))?;
+        let pvi_station;
+        let pvi_elevation;
+        let vertical_definition = Self::define_vertical_curve(&raw_hashmap)?;
+        match vertical_definition {
+            VerticalDefinition::PVI => {
+                pvi_station = raw_hashmap.get("PVI-st").unwrap().clone(); 
+                pvi_elevation = raw_hashmap.get("PVI-elev").unwrap().clone()},
+            VerticalDefinition::PVC => {
+                pvi_station = calc_station_pvi_from_pvc(raw_hashmap.get("PVC-st").unwrap(), curve_length)?; 
+                pvi_elevation = calc_elevation_pvi_from_pvc(raw_hashmap.get("PVC-elev").unwrap(), curve_length, incoming_grade)?},
+            VerticalDefinition::PVT => {
+                pvi_station = calc_station_pvi_from_pvt(raw_hashmap.get("PVT-st").unwrap(), curve_length)?; 
+                pvi_elevation = calc_elevation_pvi_from_pvt(raw_hashmap.get("PVT-elev").unwrap(), curve_length, outgoing_grade)?},
+        }
 
-        let dimensions = VerticalDimensions { 
-            incoming_grade: calc_incoming_grade(incoming_grade),
-            outgoing_grade: calc_outgoing_grade(outgoing_grade),
-            curve_length: calc_curve_length_vertical(curve_length),
-            external: calc_external_vertical(incoming_grade, outgoing_grade, curve_length),
-            sight_distance: None,
+        let mut curve = VerticalCurve {
+            dimensions: VerticalDimensions { 
+                incoming_grade: calc_incoming_grade(incoming_grade)?, 
+                outgoing_grade: calc_outgoing_grade(outgoing_grade)?,
+                curve_length: calc_curve_length_vertical(curve_length)?, 
+                external: calc_external_vertical(incoming_grade, outgoing_grade, curve_length)?, 
+                sight_distance: None,
+            }, 
+            stations: VerticalStations { 
+                pvc: calc_pvc(&pvi_station, &pvi_elevation, curve_length, calc_incoming_grade(incoming_grade)?)?, 
+                pvi: calc_pvi(&pvi_station, &pvi_elevation)?, 
+                pvt: calc_pvt(&pvi_station, &pvi_elevation, curve_length, calc_outgoing_grade(outgoing_grade)?)?,
+            }
         };
-        let stations = VerticalStations { 
-            pvc: calc_pvc(pvi_station, pvi_elevation, curve_length, dimensions.incoming_grade), //pvc = pvi - curve_length/2
-            pvi: calc_pvi(pvi_station, pvi_elevation),  
-            pvt: calc_pvt(pvi_station, pvi_elevation, curve_length, dimensions.outgoing_grade), //pvt = pvc + curve_length
-        };
-
-        let mut curve = VerticalCurve {dimensions, stations};
         curve.dimensions.sight_distance = Some(curve.calc_sight_distance());
-        
-        if Curve::VerticalCurve(curve).examine_functional(SightType::Stopping, 65, false).values().all(|b| *b) { //todo!() make interact
+
+        if Curve::VerticalCurve(curve).examine_functional(SightType::Stopping, 65, false).values().all(|b| *b) {
             println!("Curve passes all relevant inspections.");
         } else {
             println!("Curve fails all relevant inspections.");
         }
+
         Ok(curve)
-        //Err(Error::new(ErrorKind::Other, "sight distance functions configured incorrectly."))
     }
-
-    fn nudge_create(given: &mut HashMap<String, String>) -> &mut HashMap<String, String> {
-        // if !given.contains_key("Da") {
-        //     given.insert("Da".to_string(), radius_to_da(given.get("R").expect("missing R (radius) or Da")));
-        // }
-        if !given.contains_key("PVI-st") {
-            if given.contains_key("PVC-st") {
-                let value = calc_station_pvi_from_pvc(given.get("PVC-st").unwrap(), given.get("length").unwrap());
-
-                given.insert("PVI-st".to_string(), value);
-            } else if given.contains_key("PVT-st") {
-                let value = calc_station_pvi_from_pvt(given.get("PVT-st").unwrap(), given.get("length").unwrap());
-
-                given.insert("PVI-st".to_string(), value);
-            } else {
-                panic!("input doesn't contain a noted station.");   
-            }
-        }
-
-        if !given.contains_key("PVI-elev") {
-            if given.contains_key("PVC-elev") {
-                let value = calc_elevation_pvi_from_pvc(given.get("PVC-elev").unwrap(), given.get("length").unwrap(), given.get("inc").unwrap());
-
-                given.insert("PVI-elev".to_string(), value);
-            } else if given.contains_key("PVT-elev") {
-                let value = calc_elevation_pvi_from_pvt(given.get("PVT-elev").unwrap(), given.get("length").unwrap(), given.get("out").unwrap());
-
-                given.insert("PVI-elev".to_string(), value);
-            } else {
-                panic!("input doesn't contain a noted elevation.");   
-            }
-        }
-       given
-    }    
 
     //from HDM, assuming 3.5 ft driver eye height, 0.5ft obstruction height.
     fn calc_sight_distance(&self) -> f64 { //untested! todo!()
