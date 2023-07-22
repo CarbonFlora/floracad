@@ -13,3 +13,9 @@ work on testing if VA is within spec.
 
 
 **Corridors**
+
+### New Roadmap
+get station & elevation at lowest/highest point.\
+get station & elevation at specificed interval (default=25+00)\
+create frontend interface! and export to exe.\
+create cli using clap if you want because it's faster lol\
