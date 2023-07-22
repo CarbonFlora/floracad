@@ -7,6 +7,9 @@ pub mod horizontal_create;
 pub mod vertical_create;
 pub mod sight_distance;
 
+pub mod pages;
+pub mod tasks;
+
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, BufRead};

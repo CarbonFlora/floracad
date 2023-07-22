@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::io::{Error};
+use std::io::Error;
 use crate::angle_system::Angle;
 use crate::horizontal_calculation::*;
 use crate::sight_distance::*;
