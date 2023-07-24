@@ -33,6 +33,7 @@ pub struct VerticalCurve {
     pub stations: VerticalStations,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum VerticalDefinition {
     PVI,
     PVC,

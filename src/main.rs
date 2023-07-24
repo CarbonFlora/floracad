@@ -1,8 +1,7 @@
-// use iced::Settings;
+use iced::{Settings, Application};
 
-// use crate::pages::Book;
+use floracad::frontend::CurveSolver;
 
 fn main() -> Result<(), iced::Error> {
-    // Book::run(Settings::default())
-    Ok(())
+    Ok(CurveSolver::run(Settings::default())?)
 }

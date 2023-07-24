@@ -7,8 +7,7 @@ pub mod horizontal_create;
 pub mod vertical_create;
 pub mod sight_distance;
 
-pub mod pages;
-pub mod tasks;
+pub mod frontend;
 
 use std::collections::HashMap;
 use std::fs::File;

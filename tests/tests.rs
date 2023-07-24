@@ -138,7 +138,7 @@ mod tests {
 // Vertical Alignment Tests
 
     #[test]
-    fn va_generate_1() -> Result<()> {
+    fn va_generate_once() -> Result<()> {
         let hash = parse_text_file("./tests/inputs/VA/input_5.md")?;
         let vertical_alignment = VerticalCurve::from_hashmap(&hash);
         println!("{:#?}", vertical_alignment);
