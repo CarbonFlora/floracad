@@ -37,7 +37,7 @@ impl Application for CurveSolver {
 
     fn new(_flags: ()) -> (CurveSolver, Command<Message>) {
         (
-            CurveSolver::Vertical(VerticalData { input_method: VerticalDefinition::PVI, input_station: "8+90.33".to_string(), input_elevation: "138.61".to_string(), input_incoming_grade: "0.01".to_string(), input_outgoing_grade: "-0.02".to_string(), input_length: "100".to_string(), input_station_interval: "00+25".to_string() }),
+            CurveSolver::Vertical(VerticalData { input_method: VerticalDefinition::PVI, input_station: "".to_string(), input_elevation: "".to_string(), input_incoming_grade: "".to_string(), input_outgoing_grade: "".to_string(), input_length: "".to_string(), input_station_interval: "".to_string() }),
             Command::none(),
         )
     }
@@ -116,17 +116,17 @@ fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
     
     let toggle_station = button(text(">"))
         .on_press(Message::InputMethodToggle);
-    let station_modify = text_input(format!("{:?} Station (12+34)", &vertical_data.input_method).as_str(), &vertical_data.input_station)
+    let station_modify = text_input(format!("(12+34)").as_str(), &vertical_data.input_station)
         .on_input(Message::StationModify);
-    let elevation_modify = text_input(format!("{:?} Elevation (152)", &vertical_data.input_method).as_str(), &vertical_data.input_elevation)
+    let elevation_modify = text_input(format!("(152)").as_str(), &vertical_data.input_elevation)
         .on_input(Message::ElevationModify);
-    let incoming_grade_modify = text_input("Incoming Grade (0.01 = 1%)", &vertical_data.input_incoming_grade)
+    let incoming_grade_modify = text_input("(0.01 = 1%)", &vertical_data.input_incoming_grade)
         .on_input(Message::IncomingGradeModify);
-    let outgoing_grade_modify = text_input("Outgoing Grade (-0.02 = -2%)", &vertical_data.input_outgoing_grade)
+    let outgoing_grade_modify = text_input("(-0.02 = -2%)", &vertical_data.input_outgoing_grade)
         .on_input(Message::OutgoingGradeModify);
-    let length_modify = text_input("Length", &vertical_data.input_length)
+    let length_modify = text_input("(100)", &vertical_data.input_length)
         .on_input(Message::LengthModify);
-    let interval_modify = text_input("Interval", &vertical_data.input_station_interval)
+    let interval_modify = text_input("(00+25)", &vertical_data.input_station_interval)
         .on_input(Message::StationIntervalModify);
     
     let row_1 = row![text(format!("{:?} Station:", &vertical_data.input_method).as_str()), station_modify, toggle_station].spacing(h_s);
