@@ -7,8 +7,8 @@ use once_cell::sync::Lazy;
 
 pub mod output;
 
-use crate::vertical_create::VerticalDefinition;
 use crate::frontend::output::vertical_output_group;
+use crate::vertical::*;
 
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
@@ -17,16 +17,6 @@ pub enum CurveSolver {
     Vertical(VerticalData),
 }
 
-#[derive(Debug, Clone)]
-pub struct VerticalData {
-    input_method: VerticalDefinition,
-    input_station: String,
-    input_elevation: String,
-    input_incoming_grade: String,
-    input_outgoing_grade: String,
-    input_length: String,
-    input_station_interval: String,
-}
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -37,16 +27,6 @@ pub enum Message {
     OutgoingGradeModify(String),
     LengthModify(String),
     StationIntervalModify(String),
-}
-
-impl VerticalDefinition {
-    fn next(self) -> Self {
-        match self {
-            VerticalDefinition::PVC => VerticalDefinition::PVI,
-            VerticalDefinition::PVI => VerticalDefinition::PVT,
-            VerticalDefinition::PVT => VerticalDefinition::PVC,
-        }
-    } 
 }
 
 impl Application for CurveSolver {
@@ -128,7 +108,7 @@ fn vertical_header_group<'a>() -> Column<'a, Message> {
         .size(50)
         .style(Color::from([0.5, 0.5, 0.5]))
         .horizontal_alignment(alignment::Horizontal::Center);
-    column![title].spacing(20).max_width(800)
+    column![title].spacing(40).width(Length::Fill)
 }
 
 fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
@@ -158,7 +138,8 @@ fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
 
     column![row_1, row_2, row_3, row_4, row_5, row_6]
         .spacing(10)
-        .max_width(250)
+        .width(Length::FillPortion(2))
+        .padding(10)
     // column![station_modify, elevation_modify, incoming_grade_modify, outgoing_grade_modify]
     // .spacing(10)
     // .max_width(200)
