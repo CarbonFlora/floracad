@@ -6,9 +6,9 @@ use crate::datatypes::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct VerticalStations {
-    pvc: Station, 
-    pvi: Station,
-    pvt: Station,
+    pub pvc: Station, 
+    pub pvi: Station,
+    pub pvt: Station,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -16,7 +16,7 @@ pub struct VerticalDimensions {
     pub incoming_grade: f64,
     pub outgoing_grade: f64,
     pub curve_length: f64,
-    external: f64,
+    pub external: f64,
     pub sight_distance: Option<f64>,
 }
 
