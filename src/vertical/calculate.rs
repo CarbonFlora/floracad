@@ -27,7 +27,7 @@ pub struct VerticalCurve {
 }
 
 impl VerticalData {
-    fn into_dimensions(&self) -> Result<VerticalDimensions> {
+    fn to_dimensions(&self) -> Result<VerticalDimensions> {
         let incoming_grade = coerce_grade(self.input_incoming_grade.clone())?;
         let outgoing_grade = coerce_grade(self.input_outgoing_grade.clone())?;
         let curve_length = coerce_elevation(self.input_length.clone())?;
@@ -38,7 +38,7 @@ impl VerticalData {
         Ok(VerticalDimensions { incoming_grade, outgoing_grade, curve_length, external, sight_distance: None })
     }
 
-    fn into_stations(&self, dimensions: &VerticalDimensions) -> Result<VerticalStations> {
+    fn to_stations(&self, dimensions: &VerticalDimensions) -> Result<VerticalStations> {
         let starting_station = Station { value: coerce_station_value(self.input_station.clone())?, elevation: coerce_elevation(self.input_elevation.clone())? };
         
         match self.input_method {
@@ -91,8 +91,8 @@ impl VerticalData {
     }
 
     pub fn to_vertical_curve(&self) -> Result<VerticalCurve> {
-        let dimensions = self.into_dimensions()?;
-        let stations = self.into_stations(&dimensions)?;
+        let dimensions = self.to_dimensions()?;
+        let stations = self.to_stations(&dimensions)?;
 
         Ok(VerticalCurve { dimensions, stations })
     }

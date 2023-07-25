@@ -6,6 +6,8 @@ pub mod interval;
 
 use calculate::VerticalCurve;
 
+use self::{interval::CurveDetail, calculate::{VerticalDimensions, VerticalStations}};
+
 #[derive(Debug, Clone, Copy)]
 pub enum VerticalDefinition {
     PVI,
@@ -34,20 +36,48 @@ impl VerticalDefinition {
     } 
 }
 
+impl fmt::Display for VerticalDimensions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "~ Curve Details")?;
+        writeln!(f, "Curve Length: {:.2}", self.curve_length)?;
+        writeln!(f, "Grade: {:.2}% -> {:.2}%", self.incoming_grade*100.0, self.outgoing_grade*100.0)?;
+        writeln!(f, "External: {:.2}", self.external.abs())?;
+        // writeln!(f, "Curve Length: {}", self.dimensions.sight_distance)?; todo!()
+        Ok(())
+    }
+}
+
+impl fmt::Display for VerticalStations {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "~ Major Stations")?;
+        write!(f, "PVC > {:.2}", self.pvc)?;
+        write!(f, "PVI > {:.2}", self.pvi)?;
+        write!(f, "PVT > {:.2}", self.pvt)?; 
+        Ok(())
+    }
+}
+
 impl fmt::Display for VerticalCurve {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Curve Length: {}", self.dimensions.curve_length)?;
-        writeln!(f, "Grade: {} -> {}", self.dimensions.incoming_grade, self.dimensions.outgoing_grade)?;
-        writeln!(f, "External: {}", self.dimensions.external)?;
-        // writeln!(f, "Curve Length: {}", self.dimensions.sight_distance)?; todo!()
-        writeln!(f, "\n~ Major Stations\n{}{}{}", self.stations.pvc, self.stations.pvi, self.stations.pvt)?;
+        writeln!(f, "{}", self.dimensions)?;
+        writeln!(f, "{}", self.stations)?;
         Ok(())
     }
 }
 
 impl fmt::Display for Station {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "STA: {}, ELEV: {}", self.value, self.elevation)?;
+        writeln!(f, "STA: {:.0}+{:.2}, ELEV: {:.2}", (self.value/100.0).trunc(), self.value-(self.value/100.0).trunc()*100.0, self.elevation)?;
+        Ok(())
+    }
+}
+
+impl fmt::Display for CurveDetail {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "~ Interval Stations")?;
+        for station in &self.interval {
+            write!(f, "> {:.2}", station)?;
+        }
         Ok(())
     }
 }

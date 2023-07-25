@@ -37,7 +37,7 @@ impl Application for CurveSolver {
 
     fn new(_flags: ()) -> (CurveSolver, Command<Message>) {
         (
-            CurveSolver::Vertical(VerticalData { input_method: VerticalDefinition::PVI, input_station: "8+90.33".to_string(), input_elevation: "138.61".to_string(), input_incoming_grade: "0.01".to_string(), input_outgoing_grade: "-0.02".to_string(), input_length: "100".to_string(), input_station_interval: "25+00".to_string() }),
+            CurveSolver::Vertical(VerticalData { input_method: VerticalDefinition::PVI, input_station: "8+90.33".to_string(), input_elevation: "138.61".to_string(), input_incoming_grade: "0.01".to_string(), input_outgoing_grade: "-0.02".to_string(), input_length: "100".to_string(), input_station_interval: "00+25".to_string() }),
             Command::none(),
         )
     }
@@ -88,7 +88,7 @@ impl Application for CurveSolver {
         match self {
             CurveSolver::Vertical(vertical_data) => {
                 let title = vertical_header_group();
-                let body = row![vertical_input_group(&vertical_data), vertical_output_group(&vertical_data)];
+                let body = row![vertical_input_group(vertical_data), vertical_output_group(vertical_data)];
 
                 scrollable(
                     container(column![title, body])

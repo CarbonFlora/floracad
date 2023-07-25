@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use iced::widget::{column, text, Column};
 
-use crate::frontend::*;
+use crate::{frontend::*, datatypes::coerce_station_value};
 
 fn parse_vertical_data(vertical_data: &VerticalData) -> HashMap<String, String> {
     let mut raw_hash = HashMap::new();
@@ -29,23 +29,35 @@ fn parse_vertical_data(vertical_data: &VerticalData) -> HashMap<String, String> 
 
 pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
     let h_s = 5;
+    let mut column = column![].spacing(10).width(Length::FillPortion(2)).padding(10);
     
     match vertical_data.to_vertical_curve() {
         Ok(w) => {
-            let curve_details = text(format!("{}", w));
+            let vertical_curve = text(format!("{}", w));
+            column = column.push(vertical_curve);
 
-            column![curve_details]
-                .spacing(10)
-                .width(Length::FillPortion(2))
-                .padding(10)
+            // let extreme_point = text(format!("{}", w.get_extreme()));
+            column = column.push(text(format!("~ Extreme\n{}", w.get_extreme())));
+            // column = column.push();
+
+            match coerce_station_value(vertical_data.input_station_interval.clone()) {
+                Ok(t) => {
+                    let vertical_detail = text(format!("{}", w.interval_stations(t)));
+                    column = column.push(vertical_detail);
+                },
+                Err(e) => {
+                    let error_msg = text(format!("{:?}", e));
+            
+                    column = column.push(error_msg);
+                }
+            };
         },
         Err(e) => {
             let error_msg = text(format!("{:?}", e));
             
-            column![error_msg]
-                .spacing(10)
-                .width(Length::FillPortion(2))
-                .padding(10)
+            column = column.push(error_msg);
         },
     }
+
+    column
 }
