@@ -32,7 +32,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
     
     match vertical_data.to_vertical_curve() {
         Ok(w) => {
-            let curve_details = text(format!("{:#?}", w));
+            let curve_details = text(format!("{}", w));
 
             column![curve_details]
                 .spacing(10)

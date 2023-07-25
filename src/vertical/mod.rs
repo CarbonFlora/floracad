@@ -1,4 +1,5 @@
 pub mod calculate;
+pub mod interval;
 
 #[derive(Debug, Clone, Copy)]
 pub enum VerticalDefinition {
