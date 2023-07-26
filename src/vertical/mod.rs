@@ -1,18 +1,45 @@
-use std::fmt;
-use crate::datatypes::{Station, SightType};
+use anyhow::Result;
 
 pub mod calculate;
 pub mod interval;
+pub mod display;
 
 use calculate::VerticalCurve;
 
+use crate::datatypes::{Station, SightType};
 use self::{interval::CurveDetail, calculate::{VerticalDimensions, VerticalStations}};
+use crate::datatypes::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum VerticalDefinition {
     PVI,
     PVC,
     PVT,
+}
+
+impl VerticalDefinition {
+    pub fn next(self) -> Self {
+        match self {
+            VerticalDefinition::PVC => VerticalDefinition::PVI,
+            VerticalDefinition::PVI => VerticalDefinition::PVT,
+            VerticalDefinition::PVT => VerticalDefinition::PVC,
+        }
+    } 
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum DesignStandard {
+    AASHTO,
+    CALTRANS,
+}
+
+impl DesignStandard {
+    pub fn next(self) -> Self {
+        match self {
+            DesignStandard::AASHTO => DesignStandard::CALTRANS,
+            DesignStandard::CALTRANS => DesignStandard::AASHTO,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -26,59 +53,77 @@ pub struct VerticalData {
     pub input_station_interval: String,
     pub input_sight_type: SightType,
     pub input_design_speed: String,
+    pub input_design_standard: DesignStandard,
 }
 
-impl VerticalDefinition {
-    pub fn next(self) -> Self {
-        match self {
-            VerticalDefinition::PVC => VerticalDefinition::PVI,
-            VerticalDefinition::PVI => VerticalDefinition::PVT,
-            VerticalDefinition::PVT => VerticalDefinition::PVC,
-        }
-    } 
-}
+impl VerticalData {
+    fn to_dimensions(&self) -> Result<VerticalDimensions> {
+        let incoming_grade = coerce_grade(self.input_incoming_grade.clone())?;
+        let outgoing_grade = coerce_grade(self.input_outgoing_grade.clone())?;
+        let curve_length = coerce_elevation(self.input_length.clone())?;
+        let a = (outgoing_grade-incoming_grade)/(2.0*curve_length);
+        let external = a*(curve_length/2.0).powi(2);
+        let design_speed = coerce_speed(self.input_design_speed.clone()).unwrap_or_default();
 
-impl fmt::Display for VerticalDimensions {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "~ Curve Details")?;
-        writeln!(f, "Curve Length: {:.2}", self.curve_length)?;
-        writeln!(f, "Grade: {:.2}% -> {:.2}%", self.incoming_grade*100.0, self.outgoing_grade*100.0)?;
-        writeln!(f, "External: {:.2}", self.external.abs())?;
-        writeln!(f, "Sight Distance: {}", self.sight_distance)?;
-        Ok(())
+        Ok(VerticalDimensions { incoming_grade, outgoing_grade, curve_length, external, design_speed })
     }
-}
 
-impl fmt::Display for VerticalStations {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "~ Major Stations")?;
-        write!(f, "PVC > {:.2}", self.pvc)?;
-        write!(f, "PVI > {:.2}", self.pvi)?;
-        write!(f, "PVT > {:.2}", self.pvt)?; 
-        Ok(())
+    fn to_stations(&self, dimensions: &VerticalDimensions) -> Result<VerticalStations> {
+        let starting_station = Station { value: coerce_station_value(self.input_station.clone())?, elevation: coerce_elevation(self.input_elevation.clone())? };
+        
+        match self.input_method {
+            VerticalDefinition::PVC => {
+                Ok(VerticalStations { 
+                    pvc: starting_station, 
+                    pvi: self.pvc_to_pvi(starting_station, dimensions), 
+                    pvt: self.pvc_to_pvt(starting_station, dimensions), 
+                })
+            },
+            VerticalDefinition::PVI => {
+                Ok(VerticalStations { 
+                    pvc: self.pvi_to_pvc(starting_station, dimensions), 
+                    pvi: starting_station, 
+                    pvt: self.pvi_to_pvt(starting_station, dimensions), 
+                })
+            },
+            VerticalDefinition::PVT => {
+                Ok(VerticalStations { 
+                    pvc: self.pvt_to_pvc(starting_station, dimensions), 
+                    pvi: self.pvt_to_pvi(starting_station, dimensions), 
+                    pvt: starting_station,
+                })
+            },
+        }   
     }
-}
 
-impl fmt::Display for VerticalCurve {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}", self.dimensions)?;
-        writeln!(f, "{}", self.stations)?;
-        Ok(())
+    fn pvc_to_pvi(&self, sts: Station, dim: &VerticalDimensions) -> Station {
+        Station { value: sts.value+dim.curve_length/2.0, elevation: sts.elevation+dim.incoming_grade*dim.curve_length/2.0 }
     }
-}
 
-impl fmt::Display for Station {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "STA: {:.0}+{:.2}, ELEV: {:.2}", (self.value/100.0).trunc(), self.value-(self.value/100.0).trunc()*100.0, self.elevation)?;
-        Ok(())
+    fn pvc_to_pvt(&self, sts: Station, dim: &VerticalDimensions) -> Station {
+        Station { value: sts.value+dim.curve_length, elevation: sts.elevation+dim.incoming_grade*dim.curve_length/2.0+dim.outgoing_grade*dim.curve_length/2.0 }
     }
-}
 
-impl fmt::Display for CurveDetail {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        for station in &self.interval {
-            write!(f, "> {:.2}", station)?;
-        }
-        Ok(())
+    fn pvi_to_pvc(&self, sts: Station, dim: &VerticalDimensions) -> Station {
+        Station { value: sts.value-dim.curve_length/2.0, elevation: sts.elevation-dim.incoming_grade*dim.curve_length/2.0 }
+    }
+
+    fn pvi_to_pvt(&self, sts: Station, dim: &VerticalDimensions) -> Station {
+        Station { value: sts.value+dim.curve_length/2.0, elevation: sts.elevation+dim.outgoing_grade*dim.curve_length/2.0 }
+    }
+
+    fn pvt_to_pvc(&self, sts: Station, dim: &VerticalDimensions) -> Station {
+        Station { value: sts.value-dim.curve_length, elevation: sts.elevation-dim.incoming_grade*dim.curve_length/2.0-dim.outgoing_grade*dim.curve_length/2.0 }
+    }
+
+    fn pvt_to_pvi(&self, sts: Station, dim: &VerticalDimensions) -> Station {
+        Station { value: sts.value-dim.curve_length/2.0, elevation: sts.elevation-dim.outgoing_grade*dim.curve_length/2.0 }
+    }
+
+    pub fn to_vertical_curve(&self) -> Result<VerticalCurve> {
+        let dimensions = self.to_dimensions()?;
+        let stations = self.to_stations(&dimensions)?;
+
+        Ok(VerticalCurve { dimensions, stations })
     }
 }

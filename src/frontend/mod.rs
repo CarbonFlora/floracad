@@ -27,6 +27,7 @@ pub enum Message {
     OutgoingGradeModify(String),
     LengthModify(String),
     StationIntervalModify(String),
+    DesignStandardToggle,
     SightTypeToggle,
     DesignSpeed(String),
 }
@@ -39,7 +40,19 @@ impl Application for CurveSolver {
 
     fn new(_flags: ()) -> (CurveSolver, Command<Message>) {
         (
-            CurveSolver::Vertical(VerticalData { input_method: VerticalDefinition::PVI, input_station: "".to_string(), input_elevation: "".to_string(), input_incoming_grade: "".to_string(), input_outgoing_grade: "".to_string(), input_length: "".to_string(), input_station_interval: "".to_string(), input_sight_type: crate::datatypes::SightType::Stopping, input_design_speed: "".to_string() }),
+            CurveSolver::Vertical(
+                VerticalData { 
+                    input_method: VerticalDefinition::PVI, 
+                    input_station: "".to_string(), 
+                    input_elevation: "".to_string(), 
+                    input_incoming_grade: "".to_string(), 
+                    input_outgoing_grade: "".to_string(), 
+                    input_length: "".to_string(), 
+                    input_station_interval: "".to_string(), 
+                    input_sight_type: crate::datatypes::SightType::Stopping, 
+                    input_design_speed: "".to_string(),
+                    input_design_standard: DesignStandard::AASHTO
+                }),
             Command::none(),
         )
     }
@@ -80,6 +93,10 @@ impl Application for CurveSolver {
                         vertical_data.input_station_interval = raw_input;
                         Command::none()
                     },
+                    Message::DesignStandardToggle => {
+                        vertical_data.input_design_standard = vertical_data.input_design_standard.next();
+                        Command::none()
+                    },
                     Message::SightTypeToggle => {
                         vertical_data.input_sight_type = vertical_data.input_sight_type.next();
                         Command::none()
@@ -101,7 +118,7 @@ impl Application for CurveSolver {
                 let body = row![vertical_input_group(vertical_data), vertical_output_group(vertical_data)];
 
                 scrollable(
-                    container(column![title, body])
+                    container(column![title, body].spacing(10))
                         .width(Length::Fill)
                         .padding(40)
                         .center_x(),
@@ -138,6 +155,8 @@ fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
         .on_input(Message::LengthModify);
     let interval_modify = text_input("(00+25)", &vertical_data.input_station_interval)
         .on_input(Message::StationIntervalModify);
+    let toggle_design_standard = button(text("A"))
+        .on_press(Message::DesignStandardToggle);
     let toggle_sight = button(text(">"))
         .on_press(Message::SightTypeToggle);
     let design_speed = text_input("(65)", &vertical_data.input_design_speed)
@@ -149,7 +168,7 @@ fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
     let row_4 = row![text("Outgoing Grade:"), outgoing_grade_modify].spacing(h_s);
     let row_5 = row![text("Length:"), length_modify].spacing(h_s);
     let row_6 = row![text("Interval:"), interval_modify].spacing(h_s);
-    let row_7 = row![text("Design Speed:"), design_speed, toggle_sight].spacing(h_s);
+    let row_7 = row![text("Design Speed:"), design_speed, toggle_design_standard, toggle_sight].spacing(h_s);
 
     column![row_1, row_2, row_3, row_4, row_5, row_6, row_7]
         .spacing(10)

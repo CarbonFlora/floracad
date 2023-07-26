@@ -11,14 +11,19 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
             let vertical_curve = text(format!("{}", w));
             column = column.push(vertical_curve);
             
-            match w.is_compliant(vertical_data.input_sight_type, w.dimensions.design_speed) {
-                Some(h) => {
-                    match h.0 {
-                        true => column = column.push(text(format!("~ Sight Distance ({:?})\nCompliant as {} >= {}",vertical_data.input_sight_type , w.dimensions.sight_distance, h.1))),
-                        false => column = column.push(text(format!("~ Sight Distance ({:?})\nNoncompliant! as {} < {}",vertical_data.input_sight_type , w.dimensions.sight_distance, h.1))),
+            match w.is_compliant(vertical_data.input_design_standard, vertical_data.input_sight_type) {
+                Ok(j) => {
+                    match j {
+                        Some(h) => {
+                            match h.0 {
+                                true => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",vertical_data.input_design_standard, vertical_data.input_sight_type, w.dimensions.curve_length, h.1))),
+                                false => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",vertical_data.input_design_standard, vertical_data.input_sight_type, w.dimensions.curve_length, h.1))),
+                            }
+                        },
+                        None => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",vertical_data.input_design_standard, vertical_data.input_sight_type, vertical_data.input_design_standard))),
                     }
                 },
-                None => column = column.push(text(format!("~ Sight Distance\nDesign speed doesn't appear in the HDM."))),
+                Err(e) => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",vertical_data.input_design_standard, vertical_data.input_sight_type, e))),
             }
             
             column = column.push(text(format!("~ Extreme\n{}", w.get_extreme())));
@@ -27,22 +32,17 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
                 column = column.push(text(format!("~ Interval Stations\nEnter an Interval.")));
             } else {
                 match coerce_station_value(vertical_data.input_station_interval.clone()) {
-                    Ok(t) => {
-                        let vertical_detail = text(format!("{}", w.interval_stations(t)));
-                        column = column.push(vertical_detail);
+                    Ok(t) => {    
+                        column = column.push(text(format!("~ Interval Stations\n{}",w.interval_stations(t))));
                     },
                     Err(e) => {
-                        let error_msg = text(format!("{:?}", e));
-                
-                        column = column.push(error_msg);
+                        column = column.push(text(format!("~ Interval Stations\n{}",e)));
                     }
                 };
             }
         },
         Err(e) => {
-            let error_msg = text(format!("{:?}", e));
-            
-            column = column.push(error_msg);
+            column = column.push(text(format!("{:?}", e)));
         },
     }
 
