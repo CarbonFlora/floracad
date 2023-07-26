@@ -1,14 +1,14 @@
 use anyhow::Result;
 
+use crate::datatypes::*;
+
 pub mod calculate;
 pub mod interval;
 pub mod display;
 
-use calculate::VerticalCurve;
+use self::calculate::*;
+use self::interval::*;
 
-use crate::datatypes::{Station, SightType};
-use self::{interval::CurveDetail, calculate::{VerticalDimensions, VerticalStations}};
-use crate::datatypes::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum VerticalDefinition {

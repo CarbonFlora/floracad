@@ -1,10 +1,8 @@
-use anyhow::Result;
-use anyhow::anyhow;
+use anyhow::{Result, anyhow};
 use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 use crate::vertical::*;
-use crate::datatypes::*;
 
 //AASHTO GREEN BOOK TABLE 3-35
 lazy_static! {

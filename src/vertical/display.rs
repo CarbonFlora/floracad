@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::vertical::{VerticalDimensions, VerticalStations, VerticalCurve, Station, CurveDetail};
+use crate::vertical::*;
 
 impl fmt::Display for VerticalDimensions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
