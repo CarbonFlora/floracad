@@ -27,6 +27,8 @@ pub enum Message {
     OutgoingGradeModify(String),
     LengthModify(String),
     StationIntervalModify(String),
+    SightTypeToggle,
+    DesignSpeed(String),
 }
 
 impl Application for CurveSolver {
@@ -37,7 +39,7 @@ impl Application for CurveSolver {
 
     fn new(_flags: ()) -> (CurveSolver, Command<Message>) {
         (
-            CurveSolver::Vertical(VerticalData { input_method: VerticalDefinition::PVI, input_station: "".to_string(), input_elevation: "".to_string(), input_incoming_grade: "".to_string(), input_outgoing_grade: "".to_string(), input_length: "".to_string(), input_station_interval: "".to_string() }),
+            CurveSolver::Vertical(VerticalData { input_method: VerticalDefinition::PVI, input_station: "".to_string(), input_elevation: "".to_string(), input_incoming_grade: "".to_string(), input_outgoing_grade: "".to_string(), input_length: "".to_string(), input_station_interval: "".to_string(), input_sight_type: crate::datatypes::SightType::Stopping, input_design_speed: "".to_string() }),
             Command::none(),
         )
     }
@@ -78,6 +80,14 @@ impl Application for CurveSolver {
                         vertical_data.input_station_interval = raw_input;
                         Command::none()
                     },
+                    Message::SightTypeToggle => {
+                        vertical_data.input_sight_type = vertical_data.input_sight_type.next();
+                        Command::none()
+                    },
+                    Message::DesignSpeed(raw_input) => {
+                        vertical_data.input_design_speed = raw_input;
+                        Command::none()
+                    }
                 };
                 Command::batch(vec![command])
             },
@@ -128,6 +138,10 @@ fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
         .on_input(Message::LengthModify);
     let interval_modify = text_input("(00+25)", &vertical_data.input_station_interval)
         .on_input(Message::StationIntervalModify);
+    let toggle_sight = button(text(">"))
+        .on_press(Message::SightTypeToggle);
+    let design_speed = text_input("(65)", &vertical_data.input_design_speed)
+        .on_input(Message::DesignSpeed);
     
     let row_1 = row![text(format!("{:?} Station:", &vertical_data.input_method).as_str()), station_modify, toggle_station].spacing(h_s);
     let row_2 = row![text(format!("{:?} Elevation:", &vertical_data.input_method).as_str()), elevation_modify].spacing(h_s);
@@ -135,8 +149,9 @@ fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
     let row_4 = row![text("Outgoing Grade:"), outgoing_grade_modify].spacing(h_s);
     let row_5 = row![text("Length:"), length_modify].spacing(h_s);
     let row_6 = row![text("Interval:"), interval_modify].spacing(h_s);
+    let row_7 = row![text("Design Speed:"), design_speed, toggle_sight].spacing(h_s);
 
-    column![row_1, row_2, row_3, row_4, row_5, row_6]
+    column![row_1, row_2, row_3, row_4, row_5, row_6, row_7]
         .spacing(10)
         .width(Length::FillPortion(2))
         .padding(10)

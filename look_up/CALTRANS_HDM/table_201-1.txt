@@ -2,8 +2,8 @@ Table 201.1
 Sight Distance Standards
 Design Speed | Stopping | Passing
 (mph) | (ft) | (ft)
-10 50 
-15 100 
+10 50
+15 100
 20 125 800
 25 150 950
 30 200 1100

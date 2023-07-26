@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::datatypes::Station;
+use crate::datatypes::{Station, SightType};
 
 pub mod calculate;
 pub mod interval;
@@ -24,6 +24,8 @@ pub struct VerticalData {
     pub input_outgoing_grade: String,
     pub input_length: String,
     pub input_station_interval: String,
+    pub input_sight_type: SightType,
+    pub input_design_speed: String,
 }
 
 impl VerticalDefinition {
@@ -42,7 +44,7 @@ impl fmt::Display for VerticalDimensions {
         writeln!(f, "Curve Length: {:.2}", self.curve_length)?;
         writeln!(f, "Grade: {:.2}% -> {:.2}%", self.incoming_grade*100.0, self.outgoing_grade*100.0)?;
         writeln!(f, "External: {:.2}", self.external.abs())?;
-        // writeln!(f, "Curve Length: {}", self.dimensions.sight_distance)?; todo!()
+        writeln!(f, "Sight Distance: {}", self.sight_distance)?;
         Ok(())
     }
 }
@@ -74,7 +76,6 @@ impl fmt::Display for Station {
 
 impl fmt::Display for CurveDetail {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "~ Interval Stations")?;
         for station in &self.interval {
             write!(f, "> {:.2}", station)?;
         }

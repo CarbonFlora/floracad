@@ -6,6 +6,23 @@ pub struct Station {
     pub elevation: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum SightType {
+    Stopping,
+    Passing,
+    Decision,
+}
+
+impl SightType {
+    pub fn next(self) -> Self {
+        match self {
+            SightType::Stopping => SightType::Passing,
+            SightType::Passing => SightType::Decision,
+            SightType::Decision => SightType::Stopping,
+        }
+    }
+}
+
 pub fn coerce_station_value(string: String) -> Result<f64> {
     let mut station_vec = vec![];
     for slice in string.split_terminator('+') {
@@ -20,6 +37,12 @@ pub fn coerce_station_value(string: String) -> Result<f64> {
 
 pub fn coerce_elevation(string: String) -> Result<f64> {
     let slice = string.trim().parse::<f64>().map_err(|x| anyhow!("Elevation/Length is misconfigured."))?;
+
+    Ok(slice)
+}
+
+pub fn coerce_speed(string: String) -> Result<i32> {
+    let slice = string.trim().parse::<i32>().map_err(|x| anyhow!("Speed is misconfigured."))?;
 
     Ok(slice)
 }
