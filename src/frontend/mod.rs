@@ -9,6 +9,7 @@ pub mod output;
 
 use crate::frontend::output::vertical_output_group;
 use crate::vertical::*;
+use crate::datatypes::*;
 
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 

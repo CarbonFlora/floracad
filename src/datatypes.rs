@@ -7,6 +7,11 @@ pub struct Station {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct Angle {
+    pub radians: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum SightType {
     Stopping,
     Passing,
@@ -19,6 +24,21 @@ impl SightType {
             SightType::Stopping => SightType::Passing,
             SightType::Passing => SightType::Decision,
             SightType::Decision => SightType::Stopping,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum DesignStandard {
+    AASHTO,
+    CALTRANS,
+}
+
+impl DesignStandard {
+    pub fn next(self) -> Self {
+        match self {
+            DesignStandard::AASHTO => DesignStandard::CALTRANS,
+            DesignStandard::CALTRANS => DesignStandard::AASHTO,
         }
     }
 }

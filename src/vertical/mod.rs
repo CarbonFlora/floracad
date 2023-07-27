@@ -27,20 +27,7 @@ impl VerticalDefinition {
     } 
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum DesignStandard {
-    AASHTO,
-    CALTRANS,
-}
 
-impl DesignStandard {
-    pub fn next(self) -> Self {
-        match self {
-            DesignStandard::AASHTO => DesignStandard::CALTRANS,
-            DesignStandard::CALTRANS => DesignStandard::AASHTO,
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct VerticalData {
