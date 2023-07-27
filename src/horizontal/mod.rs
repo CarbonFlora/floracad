@@ -31,10 +31,9 @@ impl HorizontalDefinition {
 pub struct HorizontalData {
     pub input_method: HorizontalDefinition,
     pub input_station: String,
-    pub input_elevation: String,
-    pub input_incoming_grade: String,
-    pub input_outgoing_grade: String,
     pub input_length: String,
+    pub input_radius: String,
+    pub input_curve_angle: String,
     pub input_station_interval: String,
     pub input_sight_type: SightType,
     pub input_design_speed: String,
@@ -61,7 +60,7 @@ impl HorizontalData {
     }
 
     fn to_stations(&self, dimensions: &HorizontalDimensions) -> Result<HorizontalStations> {
-        let starting_station = Station { value: coerce_station_value(self.input_station.clone())?, elevation: coerce_elevation(self.input_elevation.clone())? };
+        let starting_station = Station { value: coerce_station_value(self.input_station.clone())?, elevation: 0.0 }; //todo!() this elevation is a hack
         
         match self.input_method {
             HorizontalDefinition::PC => {
