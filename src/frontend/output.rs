@@ -31,7 +31,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
             if vertical_data.input_station_interval=="" {
                 column = column.push(text(format!("~ Interval Stations\nEnter an Interval.")));
             } else {
-                match coerce_station_value(vertical_data.input_station_interval.clone()) {
+                match coerce_station_value(&vertical_data.input_station_interval) {
                     Ok(t) => {    
                         column = column.push(text(format!("~ Interval Stations\n{}",w.interval_stations(t))));
                     },

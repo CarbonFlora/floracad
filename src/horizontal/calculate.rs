@@ -2,9 +2,9 @@ use crate::datatypes::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct HorizontalStations {
-    pub pvc: Station, 
-    pub pvi: Station,
-    pub pvt: Station,
+    pub pc: Station, 
+    pub pi: Station,
+    pub pt: Station,
 }
 
 #[derive(Debug, Clone, Copy)]
