@@ -5,12 +5,10 @@ use anyhow::{Result, anyhow};
 use crate::datatypes::*;
 
 pub mod calculate;
-// pub mod interval;
+pub mod interval;
 pub mod display;
 
 use self::calculate::*;
-// use self::interval::*;
-
 
 #[derive(Debug, Clone, Copy)]
 pub enum HorizontalStationDefinition {

@@ -25,6 +25,7 @@ pub enum CurveSolver {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    SwitchCurveType,
     // Vertical
     InputMethodToggle,
     StationModify(String),
@@ -62,7 +63,7 @@ impl Application for CurveSolver {
                     input_station_interval: "".to_string(), 
                     input_sight_type: crate::datatypes::SightType::Stopping, 
                     input_design_speed: "".to_string(),
-                    input_design_standard: DesignStandard::AASHTO
+                    input_design_standard: DesignStandard::CALTRANS
                 }),
             Command::none(),
         )
@@ -76,6 +77,10 @@ impl Application for CurveSolver {
         match self {
             CurveSolver::Vertical(vertical_data) => {
                 let command = match message {
+                    Message::SwitchCurveType => {
+                        self.next_page();
+                        Command::none()
+                    },
                     Message::InputMethodToggle => {
                         vertical_data.input_method = vertical_data.input_method.next();
                         Command::none()
@@ -124,6 +129,10 @@ impl Application for CurveSolver {
             },
             CurveSolver::Horizontal(horizontal_data) => {
                 let command = match message {
+                    Message::SwitchCurveType => {
+                        self.next_page();
+                        Command::none()
+                    },
                     _ => {
                         Command::none()
                     }
@@ -159,6 +168,61 @@ impl Application for CurveSolver {
                 )
                 .into()
             }
+        }
+    }
+}
+
+impl CurveSolver {
+    pub fn next_page(&mut self) {
+        match self {
+            CurveSolver::Vertical(vertical_data) => {
+                *self = CurveSolver::Horizontal(HorizontalData { 
+                    input_station_method: vertical_data.input_method.into(), 
+                    input_build_method: HorizontalBuildDefinition::RadiusCurveAngle, 
+                    input_station: "".to_string(), 
+                    input_length: "".to_string(), 
+                    input_radius: "".to_string(), 
+                    input_curve_angle: "".to_string(), 
+                    input_station_interval: "".to_string(), 
+                    input_sight_type: SightType::Stopping, 
+                    input_design_speed: "".to_string(), 
+                    input_design_standard: DesignStandard::CALTRANS, 
+                })
+            },
+            CurveSolver::Horizontal(horizontal_data) => {
+                *self = CurveSolver::Vertical(VerticalData { 
+                    input_method: horizontal_data.input_station_method.into(), 
+                    input_station: "".to_string(), 
+                    input_elevation: "".to_string(), 
+                    input_incoming_grade: "".to_string(), 
+                    input_outgoing_grade: "".to_string(), 
+                    input_length: "".to_string(), 
+                    input_station_interval: "".to_string(), 
+                    input_sight_type: SightType::Stopping, 
+                    input_design_speed: "".to_string(), 
+                    input_design_standard: DesignStandard::CALTRANS, 
+                })
+            },
+        }
+    }
+}
+
+impl Into<HorizontalStationDefinition> for VerticalDefinition {
+    fn into(self) -> HorizontalStationDefinition {
+        match self {
+            Self::PVC => HorizontalStationDefinition::PC,
+            Self::PVI => HorizontalStationDefinition::PI,
+            Self::PVT => HorizontalStationDefinition::PT,
+        }
+    }
+}
+
+impl Into<VerticalDefinition> for HorizontalStationDefinition {
+    fn into(self) -> VerticalDefinition {
+        match self {
+            Self::PC => VerticalDefinition::PVC,
+            Self::PI => VerticalDefinition::PVI,
+            Self::PT => VerticalDefinition::PVT,
         }
     }
 }

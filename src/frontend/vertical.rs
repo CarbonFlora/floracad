@@ -9,7 +9,9 @@ pub fn vertical_header_group<'a>() -> Column<'a, Message> {
         .size(50)
         .style(Color::from([0.5, 0.5, 0.5]))
         .horizontal_alignment(alignment::Horizontal::Center);
-    column![title].spacing(40).width(Length::Fill)
+    let switch = button("Switch to Horizontal Curve")
+        .on_press(Message::SwitchCurveType);
+    column![title,switch].spacing(10).width(Length::Fill)
 }
 
 pub fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {

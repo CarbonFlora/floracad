@@ -8,7 +8,9 @@ pub fn horizontal_header_group<'a>() -> Column<'a, Message> {
         .size(50)
         .style(Color::from([0.5, 0.5, 0.5]))
         .horizontal_alignment(alignment::Horizontal::Center);
-    column![title].spacing(40).width(Length::Fill)
+    let switch = button("Switch to Vertical Curve")
+        .on_press(Message::SwitchCurveType);
+    column![title, switch].spacing(10).width(Length::Fill)
 }
 
 pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Message> {
@@ -36,11 +38,11 @@ pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Messag
         .on_input(Message::DesignSpeed);
     
     let row_1 = row![text(format!("{:?} Station:", &horizontal_data.input_station_method).as_str()), station_modify, toggle_station, toggle_build].spacing(h_s);
-    let row_stack_2 = column![].spacing(h_s);
+    let mut row_stack_2 = column![].spacing(h_s);
     match horizontal_data.input_build_method {
         HorizontalBuildDefinition::RadiusCurveAngle => {
-            row_stack_2.push(row![text("Radius:"), radius_modify].spacing(h_s));
-            row_stack_2.push(row![text("Curve Angle:"), curve_angle_modify].spacing(h_s));
+            row_stack_2 = row_stack_2.push(row![text("Radius:"), radius_modify].spacing(h_s));
+            row_stack_2 = row_stack_2.push(row![text("Curve Angle:"), curve_angle_modify].spacing(h_s));
         },
         _ => (),
     }
@@ -63,20 +65,20 @@ pub fn horizontal_output_group(horizontal_data: &HorizontalData) -> Column<Messa
             let horizontal_curve = text(format!("{}", w));
             column = column.push(horizontal_curve);
             
-            match w.is_compliant(horizontal_data.input_design_standard, horizontal_data.input_sight_type) {
-                Ok(j) => {
-                    match j {
-                        Some(h) => {
-                            match h.0 {
-                                true => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.curve_length, h.1))),
-                                false => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.curve_length, h.1))),
-                            }
-                        },
-                        None => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, horizontal_data.input_design_standard))),
-                    }
-                },
-                Err(e) => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, e))),
-            }
+            // match w.is_compliant(horizontal_data.input_design_standard, horizontal_data.input_sight_type) {
+            //     Ok(j) => {
+            //         match j {
+            //             Some(h) => {
+            //                 match h.0 {
+            //                     true => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.curve_length, h.1))),
+            //                     false => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.curve_length, h.1))),
+            //                 }
+            //             },
+            //             None => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, horizontal_data.input_design_standard))),
+            //         }
+            //     },
+            //     Err(e) => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, e))),
+            // } todo!() fultill this
             
             // column = column.push(text(format!("~ Extreme\n{}", w.get_extreme())));
             
