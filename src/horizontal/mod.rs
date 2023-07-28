@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 
 use crate::datatypes::*;
 
@@ -11,25 +11,31 @@ use self::calculate::*;
 
 
 #[derive(Debug, Clone, Copy)]
-pub enum HorizontalDefinition {
+pub enum HorizontalStationDefinition {
     PI,
     PC,
     PT,
 }
 
-impl HorizontalDefinition {
+#[derive(Debug, Clone, Copy)]
+pub enum HorizontalBuildDefinition {
+    RadiusCurveAngle
+}
+
+impl HorizontalStationDefinition {
     pub fn next(self) -> Self {
         match self {
-            HorizontalDefinition::PC => HorizontalDefinition::PI,
-            HorizontalDefinition::PI => HorizontalDefinition::PT,
-            HorizontalDefinition::PT => HorizontalDefinition::PC,
+            HorizontalStationDefinition::PC => HorizontalStationDefinition::PI,
+            HorizontalStationDefinition::PI => HorizontalStationDefinition::PT,
+            HorizontalStationDefinition::PT => HorizontalStationDefinition::PC,
         }
     } 
 }
 
 #[derive(Debug, Clone)]
 pub struct HorizontalData {
-    pub input_method: HorizontalDefinition,
+    pub input_station_method: HorizontalStationDefinition,
+    pub input_build_method: HorizontalBuildDefinition,
     pub input_station: String,
     pub input_length: String,
     pub input_radius: String,
@@ -42,7 +48,20 @@ pub struct HorizontalData {
 
 impl HorizontalData {
     fn to_dimensions(&self) -> Result<HorizontalDimensions> {
-        let curve_length = coerce_elevation(self.input_length.clone())?;
+        match self.input_build_method {
+            HorizontalBuildDefinition::RadiusCurveAngle => {
+                // let radius = coerce_length(self.input_radius)?;
+                // let curve_angle = coerce_angle(self.input_curve_angle)?;
+                // let tangent =
+
+                todo!()
+                // return Ok(HorizontalDimensions {radius, curve_length, tangent, long_chord, middle_ordinate, external, curve_length_100, curve_angle, design_speed})
+            },
+            _ => return Err(anyhow!("This method hasn't been implimented.")),
+        }
+
+
+        let curve_length = coerce_length(self.input_length.clone())?;
         let design_speed = coerce_speed(self.input_design_speed.clone()).unwrap_or_default();
 
         todo!();
@@ -62,22 +81,22 @@ impl HorizontalData {
     fn to_stations(&self, dimensions: &HorizontalDimensions) -> Result<HorizontalStations> {
         let starting_station = Station { value: coerce_station_value(self.input_station.clone())?, elevation: 0.0 }; //todo!() this elevation is a hack
         
-        match self.input_method {
-            HorizontalDefinition::PC => {
+        match self.input_station_method {
+            HorizontalStationDefinition::PC => {
                 Ok(HorizontalStations { 
                     pvc: starting_station, 
                     pvi: self.pvc_to_pvi(starting_station, dimensions), 
                     pvt: self.pvc_to_pvt(starting_station, dimensions), 
                 })
             },
-            HorizontalDefinition::PI => {
+            HorizontalStationDefinition::PI => {
                 Ok(HorizontalStations { 
                     pvc: self.pvi_to_pvc(starting_station, dimensions), 
                     pvi: starting_station, 
                     pvt: self.pvi_to_pvt(starting_station, dimensions), 
                 })
             },
-            HorizontalDefinition::PT => {
+            HorizontalStationDefinition::PT => {
                 Ok(HorizontalStations { 
                     pvc: self.pvt_to_pvc(starting_station, dimensions), 
                     pvi: self.pvt_to_pvi(starting_station, dimensions), 

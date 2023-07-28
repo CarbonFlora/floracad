@@ -47,7 +47,7 @@ impl VerticalData {
     fn to_dimensions(&self) -> Result<VerticalDimensions> {
         let incoming_grade = coerce_grade(self.input_incoming_grade.clone())?;
         let outgoing_grade = coerce_grade(self.input_outgoing_grade.clone())?;
-        let curve_length = coerce_elevation(self.input_length.clone())?;
+        let curve_length = coerce_length(self.input_length.clone())?;
         let a = (outgoing_grade-incoming_grade)/(2.0*curve_length);
         let external = a*(curve_length/2.0).powi(2);
         let design_speed = coerce_speed(self.input_design_speed.clone()).unwrap_or_default();
