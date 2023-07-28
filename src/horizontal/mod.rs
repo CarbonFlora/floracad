@@ -6,7 +6,7 @@ use crate::datatypes::*;
 
 pub mod calculate;
 // pub mod interval;
-// pub mod display;
+pub mod display;
 
 use self::calculate::*;
 // use self::interval::*;

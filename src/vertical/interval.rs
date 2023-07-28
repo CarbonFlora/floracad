@@ -1,9 +1,5 @@
-use crate::{vertical::VerticalCurve, datatypes::Station};
-
-#[derive(Debug, Clone)]
-pub struct CurveDetail {
-   pub interval: Vec<Station>,
-}
+use crate::vertical::*;
+use crate::datatypes::Station;
 
 impl VerticalCurve {
     pub fn get_extreme(&self) -> Station {

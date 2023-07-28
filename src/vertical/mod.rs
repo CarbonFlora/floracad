@@ -7,8 +7,6 @@ pub mod interval;
 pub mod display;
 
 use self::calculate::*;
-use self::interval::*;
-
 
 #[derive(Debug, Clone, Copy)]
 pub enum VerticalDefinition {

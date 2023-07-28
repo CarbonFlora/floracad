@@ -1,4 +1,5 @@
 use std::f64::consts::PI;
+use std::fmt;
 
 use anyhow::{Result, anyhow};
 
@@ -8,10 +9,38 @@ pub struct Station {
     pub elevation: f64,
 }
 
+impl fmt::Display for Station {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "STA: {:.0}+{:.2}, ELEV: {:.2}", (self.value/100.0).trunc(), self.value-(self.value/100.0).trunc()*100.0, self.elevation)?;
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CurveDetail {
+   pub interval: Vec<Station>,
+}
+
+impl fmt::Display for CurveDetail {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        for station in &self.interval {
+            writeln!(f, "> {:.2}", station)?;
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Angle {
     pub radians: f64,
     pub decimal_degrees: f64,
+}
+
+impl fmt::Display for Angle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "> DMS:{} | DD:{:.2} | RAD:{:.2}", self.to_dms(), self.decimal_degrees, self.radians)?;
+        Ok(())
+    }
 }
 
 impl Angle {
@@ -38,6 +67,14 @@ impl Angle {
         }
 
         Err(anyhow!("Failed to parse the given angle."))
+    }
+
+    pub fn to_dms(&self) -> String {
+        let degrees = self.decimal_degrees.trunc();
+        let minutes = ((self.decimal_degrees-degrees)*60.0).trunc();
+        let seconds = (((self.decimal_degrees-degrees)*60.0)-minutes)*60.0;
+
+        format!("{:.0}d{:.0}\'{:.2}\"", degrees, minutes, seconds)
     }
 }
 
@@ -116,6 +153,7 @@ pub fn coerce_grade(string: &String) -> Result<f64> {
 #[cfg(test)]
 mod data_tests {
     use crate::datatypes::Angle;
+    use anyhow::Result;
 
     #[test]
     fn from_angle() {
@@ -127,5 +165,17 @@ mod data_tests {
                 Err(e) => println!("Failed: {} for {}", angle, e),
             }
         }
+    }
+
+    #[test]
+    fn dd_dms_dd_eq() -> Result<()> {
+        let angles = vec!["10d32\'60.1\"","1d0\'0\"","10d","10\'","10\"","10\'12\""];
+        
+        for angle in angles {
+            let w1 = Angle::from(angle)?;
+            let w2 = w1.to_dms();
+            println!("{:?} ?= {:?}", angle, w2);
+        }
+        Ok(())
     }
 }
