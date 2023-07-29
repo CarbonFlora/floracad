@@ -38,7 +38,7 @@ pub struct Angle {
 
 impl fmt::Display for Angle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "> DMS:{} | DD:{:.2} | RAD:{:.2}", self.to_dms(), self.decimal_degrees, self.radians)?;
+        writeln!(f, "DMS:{} | DD:{:.2} | RAD:{:.2}", self.to_dms(), self.decimal_degrees, self.radians)?;
         Ok(())
     }
 }
@@ -63,7 +63,7 @@ impl Angle {
         } else if raw_data.chars().all(|c| matches!(c, '0'..='9'|'.')) {
             let decimal_degrees = raw_data.trim().parse::<f64>()?;
 
-            return Ok(Angle {radians: decimal_degrees*180.0/PI, decimal_degrees})
+            return Ok(Angle {radians: decimal_degrees*PI/180.0, decimal_degrees})
         }
 
         Err(anyhow!("Failed to parse the given angle."))
@@ -88,9 +88,9 @@ pub enum SightType {
 impl SightType {
     pub fn next(self) -> Self {
         match self {
-            SightType::Stopping => SightType::Passing,
-            SightType::Passing => SightType::Decision,
-            SightType::Decision => SightType::Stopping,
+            Self::Stopping => Self::Passing,
+            Self::Passing => Self::Decision,
+            Self::Decision => Self::Stopping,
         }
     }
 }
@@ -104,8 +104,8 @@ pub enum DesignStandard {
 impl DesignStandard {
     pub fn next(self) -> Self {
         match self {
-            DesignStandard::AASHTO => DesignStandard::CALTRANS,
-            DesignStandard::CALTRANS => DesignStandard::AASHTO,
+            Self::AASHTO => Self::CALTRANS,
+            Self::CALTRANS => Self::AASHTO,
         }
     }
 }

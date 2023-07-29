@@ -17,20 +17,29 @@ pub enum HorizontalStationDefinition {
     PT,
 }
 
+impl HorizontalStationDefinition {
+    pub fn next(self) -> Self {
+        match self {
+            Self::PC => Self::PI,
+            Self::PI => Self::PT,
+            Self::PT => Self::PC,
+        }
+    } 
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum HorizontalBuildDefinition {
     RadiusCurveAngle,
     RadiusTangent,
 }
 
-impl HorizontalStationDefinition {
+impl HorizontalBuildDefinition {
     pub fn next(self) -> Self {
         match self {
-            HorizontalStationDefinition::PC => HorizontalStationDefinition::PI,
-            HorizontalStationDefinition::PI => HorizontalStationDefinition::PT,
-            HorizontalStationDefinition::PT => HorizontalStationDefinition::PC,
+            Self::RadiusCurveAngle => Self::RadiusTangent,
+            Self::RadiusTangent => Self::RadiusCurveAngle,
         }
-    } 
+    }
 }
 
 #[derive(Debug, Clone)]

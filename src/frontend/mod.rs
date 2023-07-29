@@ -133,6 +133,46 @@ impl Application for CurveSolver {
                         self.next_page();
                         Command::none()
                     },
+                    Message::BuildMethodToggle => {
+                        horizontal_data.input_build_method = horizontal_data.input_build_method.next();
+                        Command::none()
+                    },
+                    Message::DesignStandardToggle => {
+                        horizontal_data.input_design_standard = horizontal_data.input_design_standard.next();
+                        Command::none()
+                    },
+                    Message::SightTypeToggle => {
+                        horizontal_data.input_sight_type = horizontal_data.input_sight_type.next();
+                        Command::none()
+                    },
+                    Message::StationMethodToggle => {
+                        horizontal_data.input_station_method = horizontal_data.input_station_method.next();
+                        Command::none()
+                    },
+                    Message::CurveAngleModify(raw_data) => {
+                        horizontal_data.input_curve_angle = raw_data;
+                        Command::none()
+                    },
+                    Message::DesignSpeed(raw_data) => {
+                        horizontal_data.input_design_speed = raw_data;
+                        Command::none()
+                    },
+                    Message::LengthModify(raw_data) => {
+                        horizontal_data.input_length = raw_data;
+                        Command::none()
+                    },
+                    Message::RadiusModify(raw_data) => {
+                        horizontal_data.input_radius = raw_data;
+                        Command::none()
+                    },
+                    Message::StationIntervalModify(raw_data) => {
+                        horizontal_data.input_station_interval = raw_data;
+                        Command::none()
+                    },
+                    Message::StationModify(raw_data) => {
+                        horizontal_data.input_station = raw_data;
+                        Command::none()
+                    },
                     _ => {
                         Command::none()
                     }
