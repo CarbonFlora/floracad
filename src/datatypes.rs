@@ -38,7 +38,7 @@ pub struct Angle {
 
 impl fmt::Display for Angle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "DMS:{} | DD:{:.2} | RAD:{:.2}", self.to_dms(), self.decimal_degrees, self.radians)?;
+        write!(f, "DMS:{} | DD:{:.2} | RAD:{:.2}", self.to_dms(), self.decimal_degrees, self.radians)?;
         Ok(())
     }
 }

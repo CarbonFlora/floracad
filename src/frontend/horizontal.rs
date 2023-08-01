@@ -36,6 +36,8 @@ pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Messag
         .on_press(Message::SightTypeToggle);
     let design_speed = text_input("(65)", &horizontal_data.input_design_speed)
         .on_input(Message::DesignSpeed);
+    let m = text_input("(100)", &horizontal_data.input_m)
+        .on_input(Message::MModify);
     
     let row_1 = row![text(format!("{:?} Station:", &horizontal_data.input_station_method).as_str()), station_modify, toggle_station, toggle_build].spacing(h_s);
     let mut row_stack_2 = column![].spacing(h_s);
@@ -49,8 +51,9 @@ pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Messag
 
     let row_6 = row![text("Interval:"), interval_modify].spacing(h_s);
     let row_7 = row![text("Design Speed:"), design_speed, toggle_design_standard, toggle_sight].spacing(h_s);
+    let row_8 = row![text("Clear Distance from C/L:"), m].spacing(h_s);
 
-    column![row_1, row_stack_2, row_6, row_7]
+    column![row_1, row_stack_2, row_6, row_7, row_8]
         .spacing(10)
         .width(Length::FillPortion(2))
         .padding(10)
@@ -65,20 +68,20 @@ pub fn horizontal_output_group(horizontal_data: &HorizontalData) -> Column<Messa
             let horizontal_curve = text(format!("{}", w));
             column = column.push(horizontal_curve);
             
-            // match w.is_compliant(horizontal_data.input_design_standard, horizontal_data.input_sight_type) {
-            //     Ok(j) => {
-            //         match j {
-            //             Some(h) => {
-            //                 match h.0 {
-            //                     true => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.curve_length, h.1))),
-            //                     false => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.curve_length, h.1))),
-            //                 }
-            //             },
-            //             None => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, horizontal_data.input_design_standard))),
-            //         }
-            //     },
-            //     Err(e) => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, e))),
-            // } todo!() fultill this
+            match w.is_compliant(horizontal_data.input_design_standard, horizontal_data.input_sight_type) {
+                Ok(j) => {
+                    match j {
+                        Some(h) => {
+                            match h.0 {
+                                true => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.sight_distance, h.1))),
+                                false => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, w.dimensions.sight_distance, h.1))),
+                            }
+                        },
+                        None => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, horizontal_data.input_design_standard))),
+                    }
+                },
+                Err(e) => column = column.push(text(format!("~ Sight Distance ( {:?} - {:?} )\n{:?}",horizontal_data.input_design_standard, horizontal_data.input_sight_type, e))),
+            }
             
             // column = column.push(text(format!("~ Extreme\n{}", w.get_extreme())));
             
