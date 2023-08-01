@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 use std::fmt;
 
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Station {
@@ -68,7 +68,7 @@ impl Angle {
             }
         }
 
-        Err(anyhow!("Failed to parse the given angle."))
+        Err(Error::ParseAngle.into())
     }
 
     pub fn to_dms(&self) -> String {
@@ -115,41 +115,64 @@ impl DesignStandard {
 pub fn coerce_station_value(string: &String) -> Result<f64> {
     let mut station_vec = vec![];
     for slice in string.split_terminator('+') {
-        station_vec.push(slice.trim().parse::<f64>().map_err(|x| anyhow!("Station is misconfigured."))?);
+        station_vec.push(slice.trim().parse::<f64>().map_err(|x| Error::ParseStation)?);
     }
     if let (Some(large), Some(small)) = (station_vec.first(), station_vec.get(1)) {
         Ok(large*100.0+small)
     } else {
-        Err(anyhow!("Station is misconfigured."))
+        Err(Error::ParseStation.into())
     }
 }
 
 pub fn coerce_elevation(string: &String) -> Result<f64> {
-    let slice = string.trim().parse::<f64>().map_err(|x| anyhow!("Elevation is misconfigured."))?;
+    let slice = string.trim().parse::<f64>().map_err(|x| Error::ParseElevation)?;
 
     Ok(slice)
 }
 
 pub fn coerce_length(string: &String) -> Result<f64> {
-    let slice = string.trim().parse::<f64>().map_err(|x| anyhow!("Length is misconfigured."))?;
+    let slice = string.trim().parse::<f64>().map_err(|x| Error::ParseLength)?;
 
     Ok(slice)
 }
 
 pub fn coerce_speed(string: &String) -> Result<i32> {
-    let slice = string.trim().parse::<i32>().map_err(|x| anyhow!("Speed is misconfigured."))?;
+    let slice = string.trim().parse::<i32>().map_err(|x| Error::ParseSpeed)?;
 
     Ok(slice)
 }
 
 pub fn coerce_grade(string: &String) -> Result<f64> {
-    let mut grade = string.trim().trim_end_matches('%').parse::<f64>().map_err(|x| anyhow!("Grade is misconfigured."))?;
+    let mut grade = string.trim().trim_end_matches('%').parse::<f64>().map_err(|x| Error::ParseGrade)?;
 
     if string.trim().ends_with('%') {
         grade /= 100.0;
     }
 
     Ok(grade)
+}
+
+/// Parsing errors.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Station is misconfigured.
+    #[error("Station is misconfigured.")]
+    ParseStation,
+    /// Elevation is misconfigured.
+    #[error("Elevation is misconfigured.")]
+    ParseElevation,
+    /// Length is misconfigured.
+    #[error("Length is misconfigured.")]
+    ParseLength,
+    /// Speed is misconfigured.
+    #[error("Speed is misconfigured.")]
+    ParseSpeed,
+    /// Grade is misconfigured.
+    #[error("Grade is misconfigured.")]
+    ParseGrade,
+    /// Angle is misconfigured.
+    #[error("Angle is misconfigured.")]
+    ParseAngle,
 }
 
 #[cfg(test)]
