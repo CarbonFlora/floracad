@@ -55,7 +55,7 @@ impl VerticalCurve {
                         }
                     },
                     SightType::Passing => {
-                        if grade_break.is_sign_positive() { // \/ todo!()
+                        if grade_break.is_sign_positive() { // \/
                             let l = a*min_sight.powi(2)/(400.0+3.5*min_sight);
                             if l >= min_sight {return Ok(l)}
                             let l = 2.0*min_sight-(400.0+3.5*min_sight)/a;
