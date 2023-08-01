@@ -4,7 +4,7 @@ use crate::frontend::*;
 use crate::datatypes::coerce_station_value;
 
 pub fn vertical_header_group<'a>() -> Column<'a, Message> {
-    let title = text("Vertical Curves")
+    let title = text("Vertical Curves (LARGELY UNTESTED)")
         .width(Length::Fill)
         .size(50)
         .style(Color::from([0.5, 0.5, 0.5]))

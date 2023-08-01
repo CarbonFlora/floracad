@@ -45,25 +45,27 @@ impl fmt::Display for Angle {
 
 impl Angle {
     pub fn from(raw_data: &str) -> Result<Self> {
-        if raw_data.chars().any(|c| matches!(c,  'd'|'\''|'\"')) {
-            let parts = raw_data.trim().split_terminator(['d','\'','\"']).collect::<Vec<&str>>();
-            let mut parts_iter = parts.iter();
-            let mut decimal_degrees = 0.0;
-            if raw_data.contains('d') {
-                decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?;
+        if raw_data.len() > 0 {
+            if raw_data.chars().any(|c| matches!(c,  'd'|'\''|'\"')) {
+                let parts = raw_data.trim().split_terminator(['d','\'','\"']).collect::<Vec<&str>>();
+                let mut parts_iter = parts.iter();
+                let mut decimal_degrees = 0.0;
+                if raw_data.contains('d') {
+                    decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?;
+                }
+                if raw_data.contains('\'') {
+                    decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?/60.0;
+                }
+                if raw_data.contains('\"') {
+                    decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?/3600.0;
+                }
+    
+                return Ok(Angle {radians: decimal_degrees*PI/180.0, decimal_degrees})
+            } else if raw_data.chars().all(|c| matches!(c, '0'..='9'|'.')) {
+                let decimal_degrees = raw_data.trim().parse::<f64>()?;
+    
+                return Ok(Angle {radians: decimal_degrees*PI/180.0, decimal_degrees})
             }
-            if raw_data.contains('\'') {
-                decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?/60.0;
-            }
-            if raw_data.contains('\"') {
-                decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?/3600.0;
-            }
-
-            return Ok(Angle {radians: decimal_degrees*PI/180.0, decimal_degrees})
-        } else if raw_data.chars().all(|c| matches!(c, '0'..='9'|'.')) {
-            let decimal_degrees = raw_data.trim().parse::<f64>()?;
-
-            return Ok(Angle {radians: decimal_degrees*PI/180.0, decimal_degrees})
         }
 
         Err(anyhow!("Failed to parse the given angle."))

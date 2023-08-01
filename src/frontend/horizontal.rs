@@ -3,7 +3,7 @@ use iced::widget::{column, text, Column};
 use crate::frontend::*;
 
 pub fn horizontal_header_group<'a>() -> Column<'a, Message> {
-    let title = text("Horizontal Curves")
+    let title = text("Horizontal Curves (LARGELY UNTESTED)")
         .width(Length::Fill)
         .size(50)
         .style(Color::from([0.5, 0.5, 0.5]))
