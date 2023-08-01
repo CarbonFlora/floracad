@@ -53,6 +53,7 @@ pub struct HorizontalData {
     pub input_station_interval: String,
     pub input_sight_type: SightType,
     pub input_design_speed: String,
+    pub input_m: String,
     pub input_design_standard: DesignStandard,
 }
 
@@ -67,11 +68,13 @@ impl HorizontalData {
                 let external = radius*(1.0/(curve_angle.radians/2.0).cos()-1.0);
                 let middle_ordinate = radius*(1.0-(curve_angle.radians/2.0).cos());
                 let long_chord = 2.0*radius*(curve_angle.radians/2.0).sin();
-                let curve_length_100 = Angle { radians: 5729.6/radius, decimal_degrees: 5729.6/radius*(180.0/PI) };
+                let curve_length_100 = Angle { radians: 5729.6/radius*PI/180.0, decimal_degrees: 5729.6/radius };
+                let m = coerce_length(&self.input_m).unwrap_or_default();
                 
-                let design_speed = coerce_speed(&self.input_design_speed)?;
+                let design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
+                let sight_distance = radius/28.65*((radius-m)/radius).acos()*180.0/PI;
 
-                return Ok(HorizontalDimensions {radius, curve_length, tangent, long_chord, middle_ordinate, external, curve_length_100, curve_angle, design_speed})
+                return Ok(HorizontalDimensions {radius, curve_length, tangent, long_chord, middle_ordinate, external, curve_length_100, curve_angle, design_speed, sight_distance})
             },
             _ => return Err(anyhow!("This method hasn't been implimented.")),
         }
@@ -154,6 +157,7 @@ mod hori_tests {
             input_station_interval: "".to_string(),
             input_sight_type: crate::datatypes::SightType::Stopping,
             input_design_speed: "65".to_string(),
+            input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
         };
         let hori_angle = horizontal_data.to_horizontal_curve();
@@ -175,6 +179,7 @@ mod hori_tests {
             input_station_interval: "".to_string(),
             input_sight_type: crate::datatypes::SightType::Stopping,
             input_design_speed: "65".to_string(),
+            input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
         };
         let horizontal_data_1 = HorizontalData {
@@ -187,6 +192,7 @@ mod hori_tests {
             input_station_interval: "".to_string(),
             input_sight_type: crate::datatypes::SightType::Stopping,
             input_design_speed: "65".to_string(),
+            input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
         };
         let horizontal_data_2 = HorizontalData {
@@ -199,6 +205,7 @@ mod hori_tests {
             input_station_interval: "".to_string(),
             input_sight_type: crate::datatypes::SightType::Stopping,
             input_design_speed: "65".to_string(),
+            input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
         };
 

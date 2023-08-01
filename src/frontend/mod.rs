@@ -3,6 +3,10 @@ use iced::theme::Theme;
 use iced::widget::{button, column, container, row, scrollable, text_input};
 use iced::{Application, Element};
 use iced::{Color, Command, Length};
+use iced::window::{Mode, self};
+use iced::{Event, event};
+use iced::{Subscription, subscription};
+use iced::keyboard::{self, KeyCode, Modifiers};
 use once_cell::sync::Lazy;
 
 pub mod vertical;
@@ -25,6 +29,8 @@ pub enum CurveSolver {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    // generic
+    FullScreenToggle(Mode),
     SwitchCurveType,
     // Vertical
     InputMethodToggle,
@@ -42,6 +48,7 @@ pub enum Message {
     BuildMethodToggle,
     RadiusModify(String),
     CurveAngleModify(String),
+    MModify(String),
 }
 
 impl Application for CurveSolver {
@@ -74,13 +81,20 @@ impl Application for CurveSolver {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
+        let generic = match message {
+            Message::FullScreenToggle(mode) => {
+                window::change_mode(mode)
+            },
+            Message::SwitchCurveType => {
+                self.next_page();
+                Command::none()
+            },
+            _ => Command::none(),
+        };
+
         match self {
             CurveSolver::Vertical(vertical_data) => {
-                let command = match message {
-                    Message::SwitchCurveType => {
-                        self.next_page();
-                        Command::none()
-                    },
+                let specific = match message {
                     Message::InputMethodToggle => {
                         vertical_data.input_method = vertical_data.input_method.next();
                         Command::none()
@@ -125,14 +139,10 @@ impl Application for CurveSolver {
                         Command::none()
                     }
                 };
-                Command::batch(vec![command])
+                Command::batch(vec![generic, specific])
             },
             CurveSolver::Horizontal(horizontal_data) => {
                 let command = match message {
-                    Message::SwitchCurveType => {
-                        self.next_page();
-                        Command::none()
-                    },
                     Message::BuildMethodToggle => {
                         horizontal_data.input_build_method = horizontal_data.input_build_method.next();
                         Command::none()
@@ -173,6 +183,10 @@ impl Application for CurveSolver {
                         horizontal_data.input_station = raw_data;
                         Command::none()
                     },
+                    Message::MModify(raw_data) => {
+                        horizontal_data.input_m = raw_data;
+                        Command::none()
+                    },
                     _ => {
                         Command::none()
                     }
@@ -210,6 +224,37 @@ impl Application for CurveSolver {
             }
         }
     }
+
+    fn subscription(&self) -> Subscription<Message> {
+        subscription::events_with(|event, status| match (event, status) {
+            // (
+            //     Event::Keyboard(keyboard::Event::KeyPressed {
+            //         key_code: keyboard::KeyCode::Tab,
+            //         modifiers,
+            //         ..
+            //     }),
+            //     event::Status::Ignored,
+            // ) => Some(Message::TabPressed {
+            //     shift: modifiers.shift(),
+            // }),
+            (
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    key_code,
+                    modifiers: Modifiers::SHIFT,
+                }),
+                event::Status::Ignored,
+            ) => match key_code {
+                KeyCode::Up => {
+                    Some(Message::FullScreenToggle(Mode::Fullscreen))
+                }
+                KeyCode::Down => {
+                    Some(Message::FullScreenToggle(Mode::Windowed))
+                }
+                _ => None,
+            },
+            _ => None,
+        })
+    }
 }
 
 impl CurveSolver {
@@ -226,6 +271,7 @@ impl CurveSolver {
                     input_station_interval: "".to_string(), 
                     input_sight_type: SightType::Stopping, 
                     input_design_speed: "".to_string(), 
+                    input_m: "".to_string(),
                     input_design_standard: DesignStandard::CALTRANS, 
                 })
             },
