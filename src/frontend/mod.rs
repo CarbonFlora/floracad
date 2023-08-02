@@ -60,19 +60,7 @@ impl Application for CurveSolver {
 
     fn new(_flags: ()) -> (CurveSolver, Command<Message>) {
         (
-            CurveSolver::Vertical(VerticalData {
-                input_method: VerticalDefinition::PVI,
-                input_station: "".to_string(),
-                input_elevation: "".to_string(),
-                input_incoming_grade: "".to_string(),
-                input_outgoing_grade: "".to_string(),
-                input_length: "".to_string(),
-                input_station_interval: "".to_string(),
-                input_sight_type: crate::datatypes::SightType::Stopping,
-                input_design_speed: "".to_string(),
-                input_design_standard: DesignStandard::CALTRANS,
-                sustained_downgrade: false,
-            }),
+            CurveSolver::Vertical(VerticalData::default()),
             Command::none(),
         )
     }
