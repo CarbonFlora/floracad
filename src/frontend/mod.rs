@@ -279,16 +279,6 @@ impl CurveSolver {
     }
 }
 
-// impl Into<HorizontalStationDefinition> for VerticalDefinition {
-//     fn into(self) -> HorizontalStationDefinition {
-//         match self {
-//             Self::PVC => HorizontalStationDefinition::PC,
-//             Self::PVI => HorizontalStationDefinition::PI,
-//             Self::PVT => HorizontalStationDefinition::PT,
-//         }
-//     }
-// }
-
 impl From<VerticalDefinition> for HorizontalStationDefinition {
     fn from(value: VerticalDefinition) -> Self {
         match value {

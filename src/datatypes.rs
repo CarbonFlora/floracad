@@ -75,12 +75,20 @@ impl Angle {
                     decimal_degrees += parts_iter.next().unwrap_or(&"0.0").parse::<f64>()? / 3600.0;
                 }
 
+                if decimal_degrees >= 180. {
+                    return Err(Error::OversizedAngle.into());
+                }
+
                 return Ok(Angle {
                     radians: decimal_degrees * PI / 180.0,
                     decimal_degrees,
                 });
             } else if raw_data.chars().all(|c| matches!(c, '0'..='9' | '.')) {
                 let decimal_degrees = raw_data.trim().parse::<f64>()?;
+
+                if decimal_degrees >= 180. {
+                    return Err(Error::OversizedAngle.into());
+                }
 
                 return Ok(Angle {
                     radians: decimal_degrees * PI / 180.0,
@@ -222,6 +230,9 @@ pub enum Error {
     /// Angle is misconfigured.
     #[error("Angle is misconfigured.")]
     ParseAngle,
+    /// Angle is too large.
+    #[error("Angle is too large.")]
+    OversizedAngle,
 }
 
 #[cfg(test)]

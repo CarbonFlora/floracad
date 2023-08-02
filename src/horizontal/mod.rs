@@ -219,4 +219,22 @@ mod hori_tests {
             Err(e) => println!("{}", e),
         }
     }
+
+    #[test]
+    fn h3() {
+        let horizontal_data = HorizontalData {
+            input_station_method: super::HorizontalStationDefinition::PC,
+            input_build_method: super::HorizontalBuildDefinition::RadiusCurveAngle,
+            input_station: "100+00".to_string(),
+            input_length: "600".to_string(),
+            input_radius: "818.5".to_string(),
+            input_curve_angle: "180".to_string(),
+            ..Default::default()
+        };
+        let hori_angle = horizontal_data.to_horizontal_curve();
+        match hori_angle {
+            Ok(w) => println!("O: {:#?}", w),
+            Err(e) => println!("{}", e),
+        }
+    }
 }
