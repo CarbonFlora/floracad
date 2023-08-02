@@ -142,3 +142,95 @@ impl VerticalData {
         })
     }
 }
+
+#[cfg(test)]
+mod vertical_tests {
+
+    use crate::datatypes::Station;
+
+    use super::{VerticalData, VerticalDefinition};
+
+    #[test]
+    fn v1() {
+        let data = VerticalData {
+            input_method: VerticalDefinition::PVI,
+            input_station: "10284+50".to_string(),
+            input_elevation: "1001.38".to_string(),
+            input_incoming_grade: "0.44%".to_string(),
+            input_outgoing_grade: "-0.57%".to_string(),
+            input_length: "500".to_string(),
+            ..Default::default()
+        };
+        let curve = data.to_vertical_curve().unwrap();
+        assert_eq!(
+            curve.stations.pvc,
+            Station {
+                value: 1028200.,
+                elevation: 1000.28
+            }
+        );
+        assert_eq!(
+            curve.stations.pvt,
+            Station {
+                value: 1028700.,
+                elevation: 999.955
+            }
+        );
+    }
+
+    #[test]
+    fn v2() {
+        let data = VerticalData {
+            input_method: VerticalDefinition::PVI,
+            input_station: "-10284+50".to_string(),
+            input_elevation: "1001.38".to_string(),
+            input_incoming_grade: "0.44%".to_string(),
+            input_outgoing_grade: "-0.57%".to_string(),
+            input_length: "500".to_string(),
+            ..Default::default()
+        };
+        let curve = data.to_vertical_curve().unwrap();
+        assert_eq!(
+            curve.stations.pvc,
+            Station {
+                value: -1028700.,
+                elevation: 1000.28
+            }
+        );
+        assert_eq!(
+            curve.stations.pvt,
+            Station {
+                value: -1028200.,
+                elevation: 999.955
+            }
+        );
+    }
+
+    #[test]
+    fn v3() {
+        let data = VerticalData {
+            input_method: VerticalDefinition::PVI,
+            input_station: "-0+0".to_string(),
+            input_elevation: "1001.38".to_string(),
+            input_incoming_grade: "0.44%".to_string(),
+            input_outgoing_grade: "-0.57%".to_string(),
+            input_length: "500".to_string(),
+            ..Default::default()
+        };
+        let curve = data.to_vertical_curve().unwrap();
+        assert_eq!(
+            curve.stations.pvc,
+            Station {
+                value: -250.,
+                elevation: 1000.28
+            }
+        );
+        assert_eq!(
+            curve.stations.pvt,
+            Station {
+                value: 250.,
+                elevation: 999.955
+            }
+        );
+    }
+}

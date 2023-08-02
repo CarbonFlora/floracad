@@ -146,7 +146,7 @@ pub fn coerce_station_value(string: &str) -> Result<f64> {
         );
     }
     if let (Some(large), Some(small)) = (station_vec.first(), station_vec.get(1)) {
-        Ok(large * 100.0 + small)
+        Ok(large * 100.0 + small * large.signum())
     } else {
         Err(Error::ParseStation.into())
     }

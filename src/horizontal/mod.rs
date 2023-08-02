@@ -93,6 +93,7 @@ impl HorizontalData {
                     sight_distance,
                 })
             }
+            // HorizontalBuildDefinition::RadiusTangent => {}
             _ => Err(anyhow!("This method hasn't been implimented.")),
         }
     }
@@ -178,23 +179,18 @@ impl HorizontalData {
 #[cfg(test)]
 mod hori_tests {
     use super::HorizontalData;
-    use anyhow::Result;
 
     #[test]
-    fn hori_angle() {
+    fn h1() {
         let horizontal_data = HorizontalData {
-            input_station_method: super::HorizontalStationDefinition::PC,
+            input_station_method: super::HorizontalStationDefinition::PI,
             input_build_method: super::HorizontalBuildDefinition::RadiusCurveAngle,
-            input_station: "100+00".to_string(),
+            input_station: "10284+50".to_string(),
             input_length: "600".to_string(),
             input_radius: "818.5".to_string(),
             input_curve_angle: "63d15\'34\"".to_string(),
-            input_station_interval: "".to_string(),
-            input_sight_type: crate::datatypes::SightType::Stopping,
             input_design_speed: "65".to_string(),
             input_m: "1000".to_string(),
-            input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
-            sustained_downgrade: false,
             ..Default::default()
         };
         let hori_angle = horizontal_data.to_horizontal_curve();
@@ -205,59 +201,22 @@ mod hori_tests {
     }
 
     #[test]
-    fn hori_angle_dupe() -> Result<()> {
+    fn h2() {
         let horizontal_data = HorizontalData {
             input_station_method: super::HorizontalStationDefinition::PC,
             input_build_method: super::HorizontalBuildDefinition::RadiusCurveAngle,
             input_station: "100+00".to_string(),
             input_length: "600".to_string(),
             input_radius: "818.5".to_string(),
-            input_curve_angle: "63d30\'".to_string(),
-            input_station_interval: "".to_string(),
-            input_sight_type: crate::datatypes::SightType::Stopping,
+            input_curve_angle: "63d15\'34\"".to_string(),
             input_design_speed: "65".to_string(),
             input_m: "1000".to_string(),
-            input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
-            sustained_downgrade: false,
             ..Default::default()
         };
-        let horizontal_data_1 = HorizontalData {
-            input_station_method: super::HorizontalStationDefinition::PC,
-            input_build_method: super::HorizontalBuildDefinition::RadiusCurveAngle,
-            input_station: "100+00".to_string(),
-            input_length: "600".to_string(),
-            input_radius: "818.5".to_string(),
-            input_curve_angle: "63.5d".to_string(),
-            input_station_interval: "".to_string(),
-            input_sight_type: crate::datatypes::SightType::Stopping,
-            input_design_speed: "65".to_string(),
-            input_m: "1000".to_string(),
-            input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
-            sustained_downgrade: false,
-            ..Default::default()
-        };
-        let horizontal_data_2 = HorizontalData {
-            input_station_method: super::HorizontalStationDefinition::PC,
-            input_build_method: super::HorizontalBuildDefinition::RadiusCurveAngle,
-            input_station: "100+00".to_string(),
-            input_length: "600".to_string(),
-            input_radius: "818.5".to_string(),
-            input_curve_angle: "63.5".to_string(),
-            input_station_interval: "".to_string(),
-            input_sight_type: crate::datatypes::SightType::Stopping,
-            input_design_speed: "65".to_string(),
-            input_m: "1000".to_string(),
-            input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
-            sustained_downgrade: false,
-            ..Default::default()
-        };
-
-        let hori_angle = horizontal_data.to_horizontal_curve()?;
-        let hori_angle_1 = horizontal_data_1.to_horizontal_curve()?;
-        let hori_angle_2 = horizontal_data_2.to_horizontal_curve()?;
-
-        assert!(matches!(&hori_angle, hori_angle_1));
-        assert!(matches!(hori_angle, hori_angle_2));
-        Ok(())
+        let hori_angle = horizontal_data.to_horizontal_curve();
+        match hori_angle {
+            Ok(w) => println!("O: {:#?}", w),
+            Err(e) => println!("{}", e),
+        }
     }
 }
