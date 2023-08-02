@@ -90,7 +90,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
                     Some(h) => match h.0 {
                         true => {
                             column = column.push(text(format!(
-                                "~ Sight Distance ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",
+                                "~ Curve Length ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",
                                 vertical_data.input_design_standard,
                                 vertical_data.input_sight_type,
                                 w.dimensions.curve_length,
@@ -99,7 +99,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
                         }
                         false => {
                             column = column.push(text(format!(
-                                "~ Sight Distance ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",
+                                "~ Curve Length ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",
                                 vertical_data.input_design_standard,
                                 vertical_data.input_sight_type,
                                 w.dimensions.curve_length,
@@ -109,7 +109,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
                     },
                     None => {
                         column = column.push(text(format!(
-                            "~ Sight Distance ( {:?} - {:?} )\n{:?}",
+                            "~ Curve Length ( {:?} - {:?} )\n{:?}",
                             vertical_data.input_design_standard,
                             vertical_data.input_sight_type,
                             vertical_data.input_design_standard
@@ -118,7 +118,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
                 },
                 Err(e) => {
                     column = column.push(text(format!(
-                        "~ Sight Distance ( {:?} - {:?} )\n{:?}",
+                        "~ Curve Length ( {:?} - {:?} )\n{:?}",
                         vertical_data.input_design_standard, vertical_data.input_sight_type, e
                     )))
                 }
