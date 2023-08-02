@@ -1,4 +1,4 @@
-use iced::widget::{column, text, Column};
+use iced::widget::{column, text, Column, checkbox};
 
 use crate::frontend::*;
 use crate::datatypes::coerce_station_value;
@@ -37,7 +37,8 @@ pub fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
         .on_press(Message::SightTypeToggle);
     let design_speed = text_input("(65)", &vertical_data.input_design_speed)
         .on_input(Message::DesignSpeed);
-    
+    let sustained_downgrade = checkbox("Sustained Downgrade", vertical_data.sustained_downgrade, Message::SustainedDowngradeCheck);
+
     let row_1 = row![text(format!("{:?} Station:", &vertical_data.input_method).as_str()), station_modify, toggle_station].spacing(h_s);
     let row_2 = row![text(format!("{:?} Elevation:", &vertical_data.input_method).as_str()), elevation_modify].spacing(h_s);
     let row_3 = row![text("Incoming Grade:"), incoming_grade_modify].spacing(h_s);
@@ -45,8 +46,9 @@ pub fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
     let row_5 = row![text("Length:"), length_modify].spacing(h_s);
     let row_6 = row![text("Interval:"), interval_modify].spacing(h_s);
     let row_7 = row![text("Design Speed:"), design_speed, toggle_design_standard, toggle_sight].spacing(h_s);
+    let row_8 = row![sustained_downgrade].spacing(h_s);
 
-    column![row_1, row_2, row_3, row_4, row_5, row_6, row_7]
+    column![row_1, row_2, row_3, row_4, row_5, row_6, row_7, row_8]
         .spacing(10)
         .width(Length::FillPortion(2))
         .padding(10)
@@ -61,7 +63,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
             let vertical_curve = text(format!("{}", w));
             column = column.push(vertical_curve);
             
-            match w.is_compliant(vertical_data.input_design_standard, vertical_data.input_sight_type) {
+            match w.is_compliant(vertical_data.input_design_standard, vertical_data.input_sight_type, calc_adjustment(vertical_data.sustained_downgrade)) {
                 Ok(j) => {
                     match j {
                         Some(h) => {

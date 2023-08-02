@@ -32,6 +32,7 @@ pub enum Message {
     // generic
     FullScreenToggle(Mode),
     SwitchCurveType,
+    SustainedDowngradeCheck(bool),
     // Vertical
     InputMethodToggle,
     StationModify(String),
@@ -70,7 +71,8 @@ impl Application for CurveSolver {
                     input_station_interval: "".to_string(), 
                     input_sight_type: crate::datatypes::SightType::Stopping, 
                     input_design_speed: "".to_string(),
-                    input_design_standard: DesignStandard::CALTRANS
+                    input_design_standard: DesignStandard::CALTRANS,
+                    sustained_downgrade: false,
                 }),
             Command::none(),
         )
@@ -135,6 +137,10 @@ impl Application for CurveSolver {
                         vertical_data.input_design_speed = raw_input;
                         Command::none()
                     },
+                    Message::SustainedDowngradeCheck(raw_input) => {
+                        vertical_data.sustained_downgrade = raw_input;
+                        Command::none()
+                    },
                     _ => {
                         Command::none()
                     }
@@ -142,7 +148,7 @@ impl Application for CurveSolver {
                 Command::batch(vec![generic, specific])
             },
             CurveSolver::Horizontal(horizontal_data) => {
-                let command = match message {
+                let specific = match message {
                     Message::BuildMethodToggle => {
                         horizontal_data.input_build_method = horizontal_data.input_build_method.next();
                         Command::none()
@@ -187,11 +193,15 @@ impl Application for CurveSolver {
                         horizontal_data.input_m = raw_data;
                         Command::none()
                     },
+                    Message::SustainedDowngradeCheck(raw_input) => {
+                        horizontal_data.sustained_downgrade = raw_input;
+                        Command::none()
+                    },
                     _ => {
                         Command::none()
                     }
                 };
-                Command::batch(vec![command])
+                Command::batch(vec![generic, specific])
             },
         }
     }
@@ -273,6 +283,7 @@ impl CurveSolver {
                     input_design_speed: "".to_string(), 
                     input_m: "".to_string(),
                     input_design_standard: DesignStandard::CALTRANS, 
+                    sustained_downgrade: false,
                 })
             },
             CurveSolver::Horizontal(horizontal_data) => {
@@ -287,6 +298,7 @@ impl CurveSolver {
                     input_sight_type: SightType::Stopping, 
                     input_design_speed: "".to_string(), 
                     input_design_standard: DesignStandard::CALTRANS, 
+                    sustained_downgrade: false,
                 })
             },
         }

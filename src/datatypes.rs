@@ -152,6 +152,14 @@ pub fn coerce_grade(string: &String) -> Result<f64> {
     Ok(grade)
 }
 
+pub fn calc_adjustment(bools: bool) -> f64 {
+    let mut adjustment = 1.;
+    if bools {
+        adjustment += 0.2;
+    }
+    adjustment
+}
+
 /// Parsing errors.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

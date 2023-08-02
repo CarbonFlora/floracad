@@ -39,6 +39,7 @@ pub struct VerticalData {
     pub input_sight_type: SightType,
     pub input_design_speed: String,
     pub input_design_standard: DesignStandard,
+    pub sustained_downgrade: bool,
 }
 
 impl VerticalData {
@@ -49,8 +50,9 @@ impl VerticalData {
         let a = (outgoing_grade-incoming_grade)/(2.0*curve_length);
         let external = a*(curve_length/2.0).powi(2);
         let design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
+        let sustained_downgrade = self.sustained_downgrade;
 
-        Ok(VerticalDimensions { incoming_grade, outgoing_grade, curve_length, external, design_speed })
+        Ok(VerticalDimensions { incoming_grade, outgoing_grade, curve_length, external, design_speed, sustained_downgrade })
     }
 
     fn to_stations(&self, dimensions: &VerticalDimensions) -> Result<VerticalStations> {

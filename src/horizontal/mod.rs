@@ -55,6 +55,7 @@ pub struct HorizontalData {
     pub input_design_speed: String,
     pub input_m: String,
     pub input_design_standard: DesignStandard,
+    pub sustained_downgrade: bool,
 }
 
 impl HorizontalData {
@@ -159,6 +160,7 @@ mod hori_tests {
             input_design_speed: "65".to_string(),
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
+            sustained_downgrade: false,
         };
         let hori_angle = horizontal_data.to_horizontal_curve();
         match hori_angle {
@@ -181,6 +183,7 @@ mod hori_tests {
             input_design_speed: "65".to_string(),
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
+            sustained_downgrade: false,
         };
         let horizontal_data_1 = HorizontalData {
             input_station_method: super::HorizontalStationDefinition::PC,
@@ -194,6 +197,7 @@ mod hori_tests {
             input_design_speed: "65".to_string(),
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
+            sustained_downgrade: false,
         };
         let horizontal_data_2 = HorizontalData {
             input_station_method: super::HorizontalStationDefinition::PC,
@@ -207,6 +211,7 @@ mod hori_tests {
             input_design_speed: "65".to_string(),
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
+            sustained_downgrade: false,
         };
 
         let hori_angle = horizontal_data.to_horizontal_curve()?;

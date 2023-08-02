@@ -17,6 +17,7 @@ pub struct VerticalDimensions {
     pub curve_length: f64,
     pub external: f64,
     pub design_speed: i32,
+    pub sustained_downgrade: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -120,11 +121,11 @@ impl VerticalCurve {
 
 
 
-    pub fn is_compliant(&self, design_standard: DesignStandard, sight_type: SightType) -> Result<Option<(bool, f64)>> {
+    pub fn is_compliant(&self, design_standard: DesignStandard, sight_type: SightType, adjustment: f64) -> Result<Option<(bool, f64)>> {
         let min_sight = get_min_sight(self.dimensions.design_speed, design_standard, sight_type);
         match min_sight {
             Some(w) => {
-                let min_curve_length = self.calc_min_curve_length(w, design_standard, sight_type)?;
+                let min_curve_length = self.calc_min_curve_length(w*adjustment, design_standard, sight_type)?;
 
                 Ok(Some(((self.dimensions.curve_length>=min_curve_length), min_curve_length)))
             },
