@@ -1,17 +1,17 @@
+use anyhow::{anyhow, Result};
 use std::f64::consts::PI;
-
-use anyhow::{Result, anyhow};
 
 use crate::datatypes::*;
 
 pub mod calculate;
-pub mod interval;
 pub mod display;
+pub mod interval;
 
 use self::calculate::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum HorizontalStationDefinition {
+    #[default]
     PI,
     PC,
     PT,
@@ -24,11 +24,12 @@ impl HorizontalStationDefinition {
             Self::PI => Self::PT,
             Self::PT => Self::PC,
         }
-    } 
+    }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum HorizontalBuildDefinition {
+    #[default]
     RadiusCurveAngle,
     RadiusTangent,
 }
@@ -42,7 +43,7 @@ impl HorizontalBuildDefinition {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct HorizontalData {
     pub input_station_method: HorizontalStationDefinition,
     pub input_build_method: HorizontalBuildDefinition,
@@ -50,6 +51,7 @@ pub struct HorizontalData {
     pub input_length: String,
     pub input_radius: String,
     pub input_curve_angle: String,
+    pub input_tangent: String,
     pub input_station_interval: String,
     pub input_sight_type: SightType,
     pub input_design_speed: String,
@@ -63,81 +65,113 @@ impl HorizontalData {
         match self.input_build_method {
             HorizontalBuildDefinition::RadiusCurveAngle => {
                 let radius = coerce_length(&self.input_radius)?;
-                let curve_angle = Angle::from(&self.input_curve_angle.as_str())?;
-                let curve_length = radius*curve_angle.decimal_degrees*PI/180.0;
-                let tangent = radius*(curve_angle.radians/2.0).tan();
-                let external = radius*(1.0/(curve_angle.radians/2.0).cos()-1.0);
-                let middle_ordinate = radius*(1.0-(curve_angle.radians/2.0).cos());
-                let long_chord = 2.0*radius*(curve_angle.radians/2.0).sin();
-                let curve_length_100 = Angle { radians: 5729.6/radius*PI/180.0, decimal_degrees: 5729.6/radius };
+                let curve_angle = Angle::from(self.input_curve_angle.as_str())?;
+                let curve_length = radius * curve_angle.decimal_degrees * PI / 180.0;
+                let tangent = radius * (curve_angle.radians / 2.0).tan();
+                let external = radius * (1.0 / (curve_angle.radians / 2.0).cos() - 1.0);
+                let middle_ordinate = radius * (1.0 - (curve_angle.radians / 2.0).cos());
+                let long_chord = 2.0 * radius * (curve_angle.radians / 2.0).sin();
+                let curve_length_100 = Angle {
+                    radians: 5729.6 / radius * PI / 180.0,
+                    decimal_degrees: 5729.6 / radius,
+                };
                 let m = coerce_length(&self.input_m).unwrap_or_default();
-                
-                let design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
-                let sight_distance = radius/28.65*((radius-m)/radius).acos()*180.0/PI;
 
-                return Ok(HorizontalDimensions {radius, curve_length, tangent, long_chord, middle_ordinate, external, curve_length_100, curve_angle, design_speed, sight_distance})
-            },
-            _ => return Err(anyhow!("This method hasn't been implimented.")),
+                let design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
+                let sight_distance = radius / 28.65 * ((radius - m) / radius).acos() * 180.0 / PI;
+
+                Ok(HorizontalDimensions {
+                    radius,
+                    curve_length,
+                    tangent,
+                    long_chord,
+                    middle_ordinate,
+                    external,
+                    curve_length_100,
+                    curve_angle,
+                    design_speed,
+                    sight_distance,
+                })
+            }
+            _ => Err(anyhow!("This method hasn't been implimented.")),
         }
     }
 
     fn to_stations(&self, dimensions: &HorizontalDimensions) -> Result<HorizontalStations> {
-        let starting_station = Station { value: coerce_station_value(&self.input_station)?, elevation: 0.0 }; //todo!() this elevation is a hack
+        let starting_station = Station {
+            value: coerce_station_value(&self.input_station)?,
+            elevation: 0.0,
+        }; //todo!() this elevation is a hack
 
         match self.input_station_method {
-            HorizontalStationDefinition::PC => {
-                Ok(HorizontalStations { 
-                    pc: starting_station, 
-                    pi: self.pc_to_pi(starting_station, dimensions), 
-                    pt: self.pc_to_pt(starting_station, dimensions), 
-                })
-            },
-            HorizontalStationDefinition::PI => {
-                Ok(HorizontalStations { 
-                    pc: self.pi_to_pc(starting_station, dimensions), 
-                    pi: starting_station, 
-                    pt: self.pi_to_pt(starting_station, dimensions), 
-                })
-            },
-            HorizontalStationDefinition::PT => {
-                Ok(HorizontalStations { 
-                    pc: self.pt_to_pc(starting_station, dimensions), 
-                    pi: self.pt_to_pi(starting_station, dimensions), 
-                    pt: starting_station,
-                })
-            },
-        }   
+            HorizontalStationDefinition::PC => Ok(HorizontalStations {
+                pc: starting_station,
+                pi: self.pc_to_pi(starting_station, dimensions),
+                pt: self.pc_to_pt(starting_station, dimensions),
+            }),
+            HorizontalStationDefinition::PI => Ok(HorizontalStations {
+                pc: self.pi_to_pc(starting_station, dimensions),
+                pi: starting_station,
+                pt: self.pi_to_pt(starting_station, dimensions),
+            }),
+            HorizontalStationDefinition::PT => Ok(HorizontalStations {
+                pc: self.pt_to_pc(starting_station, dimensions),
+                pi: self.pt_to_pi(starting_station, dimensions),
+                pt: starting_station,
+            }),
+        }
     }
 
     fn pc_to_pi(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
-        Station { value: sts.value+dim.tangent, elevation: 0.0 }
+        Station {
+            value: sts.value + dim.tangent,
+            elevation: 0.0,
+        }
     }
 
     fn pc_to_pt(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
-        Station { value: sts.value+dim.curve_length, elevation: 0.0 }
+        Station {
+            value: sts.value + dim.curve_length,
+            elevation: 0.0,
+        }
     }
 
     fn pi_to_pc(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
-        Station { value: sts.value-dim.tangent, elevation: 0.0 }
+        Station {
+            value: sts.value - dim.tangent,
+            elevation: 0.0,
+        }
     }
 
     fn pi_to_pt(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
-        Station { value: sts.value+dim.tangent, elevation: 0.0 }
+        Station {
+            value: sts.value + dim.tangent,
+            elevation: 0.0,
+        }
     }
 
     fn pt_to_pc(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
-        Station { value: sts.value-dim.curve_length, elevation: 0.0 }
+        Station {
+            value: sts.value - dim.curve_length,
+            elevation: 0.0,
+        }
     }
 
     fn pt_to_pi(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
-        Station { value: sts.value-dim.tangent, elevation: 0.0 }
+        Station {
+            value: sts.value - dim.tangent,
+            elevation: 0.0,
+        }
     }
 
     pub fn to_horizontal_curve(&self) -> Result<HorizontalCurve> {
         let dimensions = self.to_dimensions()?;
         let stations = self.to_stations(&dimensions)?;
 
-        Ok(HorizontalCurve { dimensions, stations })
+        Ok(HorizontalCurve {
+            dimensions,
+            stations,
+        })
     }
 }
 
@@ -161,6 +195,7 @@ mod hori_tests {
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
             sustained_downgrade: false,
+            ..Default::default()
         };
         let hori_angle = horizontal_data.to_horizontal_curve();
         match hori_angle {
@@ -184,6 +219,7 @@ mod hori_tests {
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
             sustained_downgrade: false,
+            ..Default::default()
         };
         let horizontal_data_1 = HorizontalData {
             input_station_method: super::HorizontalStationDefinition::PC,
@@ -198,6 +234,7 @@ mod hori_tests {
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
             sustained_downgrade: false,
+            ..Default::default()
         };
         let horizontal_data_2 = HorizontalData {
             input_station_method: super::HorizontalStationDefinition::PC,
@@ -212,6 +249,7 @@ mod hori_tests {
             input_m: "1000".to_string(),
             input_design_standard: crate::datatypes::DesignStandard::CALTRANS,
             sustained_downgrade: false,
+            ..Default::default()
         };
 
         let hori_angle = horizontal_data.to_horizontal_curve()?;
@@ -222,5 +260,4 @@ mod hori_tests {
         assert!(matches!(hori_angle, hori_angle_2));
         Ok(())
     }
-
 }

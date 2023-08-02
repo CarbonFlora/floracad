@@ -3,13 +3,14 @@ use anyhow::Result;
 use crate::datatypes::*;
 
 pub mod calculate;
-pub mod interval;
 pub mod display;
+pub mod interval;
 
 use self::calculate::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum VerticalDefinition {
+    #[default]
     PVI,
     PVC,
     PVT,
@@ -22,12 +23,10 @@ impl VerticalDefinition {
             VerticalDefinition::PVI => VerticalDefinition::PVT,
             VerticalDefinition::PVT => VerticalDefinition::PVC,
         }
-    } 
+    }
 }
 
-
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct VerticalData {
     pub input_method: VerticalDefinition,
     pub input_station: String,
@@ -47,70 +46,99 @@ impl VerticalData {
         let incoming_grade = coerce_grade(&self.input_incoming_grade)?;
         let outgoing_grade = coerce_grade(&self.input_outgoing_grade)?;
         let curve_length = coerce_length(&self.input_length)?;
-        let a = (outgoing_grade-incoming_grade)/(2.0*curve_length);
-        let external = a*(curve_length/2.0).powi(2);
+        let a = (outgoing_grade - incoming_grade) / (2.0 * curve_length);
+        let external = a * (curve_length / 2.0).powi(2);
         let design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
         let sustained_downgrade = self.sustained_downgrade;
 
-        Ok(VerticalDimensions { incoming_grade, outgoing_grade, curve_length, external, design_speed, sustained_downgrade })
+        Ok(VerticalDimensions {
+            incoming_grade,
+            outgoing_grade,
+            curve_length,
+            external,
+            design_speed,
+            sustained_downgrade,
+        })
     }
 
     fn to_stations(&self, dimensions: &VerticalDimensions) -> Result<VerticalStations> {
-        let starting_station = Station { value: coerce_station_value(&self.input_station)?, elevation: coerce_elevation(&self.input_elevation)? };
-        
+        let starting_station = Station {
+            value: coerce_station_value(&self.input_station)?,
+            elevation: coerce_elevation(&self.input_elevation)?,
+        };
+
         match self.input_method {
-            VerticalDefinition::PVC => {
-                Ok(VerticalStations { 
-                    pvc: starting_station, 
-                    pvi: self.pvc_to_pvi(starting_station, dimensions), 
-                    pvt: self.pvc_to_pvt(starting_station, dimensions), 
-                })
-            },
-            VerticalDefinition::PVI => {
-                Ok(VerticalStations { 
-                    pvc: self.pvi_to_pvc(starting_station, dimensions), 
-                    pvi: starting_station, 
-                    pvt: self.pvi_to_pvt(starting_station, dimensions), 
-                })
-            },
-            VerticalDefinition::PVT => {
-                Ok(VerticalStations { 
-                    pvc: self.pvt_to_pvc(starting_station, dimensions), 
-                    pvi: self.pvt_to_pvi(starting_station, dimensions), 
-                    pvt: starting_station,
-                })
-            },
-        }   
+            VerticalDefinition::PVC => Ok(VerticalStations {
+                pvc: starting_station,
+                pvi: self.pvc_to_pvi(starting_station, dimensions),
+                pvt: self.pvc_to_pvt(starting_station, dimensions),
+            }),
+            VerticalDefinition::PVI => Ok(VerticalStations {
+                pvc: self.pvi_to_pvc(starting_station, dimensions),
+                pvi: starting_station,
+                pvt: self.pvi_to_pvt(starting_station, dimensions),
+            }),
+            VerticalDefinition::PVT => Ok(VerticalStations {
+                pvc: self.pvt_to_pvc(starting_station, dimensions),
+                pvi: self.pvt_to_pvi(starting_station, dimensions),
+                pvt: starting_station,
+            }),
+        }
     }
 
     fn pvc_to_pvi(&self, sts: Station, dim: &VerticalDimensions) -> Station {
-        Station { value: sts.value+dim.curve_length/2.0, elevation: sts.elevation+dim.incoming_grade*dim.curve_length/2.0 }
+        Station {
+            value: sts.value + dim.curve_length / 2.0,
+            elevation: sts.elevation + dim.incoming_grade * dim.curve_length / 2.0,
+        }
     }
 
     fn pvc_to_pvt(&self, sts: Station, dim: &VerticalDimensions) -> Station {
-        Station { value: sts.value+dim.curve_length, elevation: sts.elevation+dim.incoming_grade*dim.curve_length/2.0+dim.outgoing_grade*dim.curve_length/2.0 }
+        Station {
+            value: sts.value + dim.curve_length,
+            elevation: sts.elevation
+                + dim.incoming_grade * dim.curve_length / 2.0
+                + dim.outgoing_grade * dim.curve_length / 2.0,
+        }
     }
 
     fn pvi_to_pvc(&self, sts: Station, dim: &VerticalDimensions) -> Station {
-        Station { value: sts.value-dim.curve_length/2.0, elevation: sts.elevation-dim.incoming_grade*dim.curve_length/2.0 }
+        Station {
+            value: sts.value - dim.curve_length / 2.0,
+            elevation: sts.elevation - dim.incoming_grade * dim.curve_length / 2.0,
+        }
     }
 
     fn pvi_to_pvt(&self, sts: Station, dim: &VerticalDimensions) -> Station {
-        Station { value: sts.value+dim.curve_length/2.0, elevation: sts.elevation+dim.outgoing_grade*dim.curve_length/2.0 }
+        Station {
+            value: sts.value + dim.curve_length / 2.0,
+            elevation: sts.elevation + dim.outgoing_grade * dim.curve_length / 2.0,
+        }
     }
 
     fn pvt_to_pvc(&self, sts: Station, dim: &VerticalDimensions) -> Station {
-        Station { value: sts.value-dim.curve_length, elevation: sts.elevation-dim.incoming_grade*dim.curve_length/2.0-dim.outgoing_grade*dim.curve_length/2.0 }
+        Station {
+            value: sts.value - dim.curve_length,
+            elevation: sts.elevation
+                - dim.incoming_grade * dim.curve_length / 2.0
+                - dim.outgoing_grade * dim.curve_length / 2.0,
+        }
     }
 
     fn pvt_to_pvi(&self, sts: Station, dim: &VerticalDimensions) -> Station {
-        Station { value: sts.value-dim.curve_length/2.0, elevation: sts.elevation-dim.outgoing_grade*dim.curve_length/2.0 }
+        Station {
+            value: sts.value - dim.curve_length / 2.0,
+            elevation: sts.elevation - dim.outgoing_grade * dim.curve_length / 2.0,
+        }
     }
 
     pub fn to_vertical_curve(&self) -> Result<VerticalCurve> {
         let dimensions = self.to_dimensions()?;
         let stations = self.to_stations(&dimensions)?;
 
-        Ok(VerticalCurve { dimensions, stations })
+        Ok(VerticalCurve {
+            dimensions,
+            stations,
+        })
     }
 }

@@ -1,22 +1,22 @@
 use iced::alignment::{self};
+use iced::keyboard::{self, KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::{button, column, container, row, scrollable, text_input};
+use iced::window::{self, Mode};
+use iced::{event, Event};
+use iced::{subscription, Subscription};
 use iced::{Application, Element};
 use iced::{Color, Command, Length};
-use iced::window::{Mode, self};
-use iced::{Event, event};
-use iced::{Subscription, subscription};
-use iced::keyboard::{self, KeyCode, Modifiers};
 use once_cell::sync::Lazy;
 
-pub mod vertical;
 pub mod horizontal;
+pub mod vertical;
 
-use crate::frontend::vertical::*;
-use crate::frontend::horizontal::*;
-use crate::vertical::*;
-use crate::horizontal::*;
 use crate::datatypes::*;
+use crate::frontend::horizontal::*;
+use crate::frontend::vertical::*;
+use crate::horizontal::*;
+use crate::vertical::*;
 
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
@@ -25,7 +25,6 @@ pub enum CurveSolver {
     Vertical(VerticalData),
     Horizontal(HorizontalData),
 }
-
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -49,6 +48,7 @@ pub enum Message {
     BuildMethodToggle,
     RadiusModify(String),
     CurveAngleModify(String),
+    TangentModify(String),
     MModify(String),
 }
 
@@ -60,20 +60,19 @@ impl Application for CurveSolver {
 
     fn new(_flags: ()) -> (CurveSolver, Command<Message>) {
         (
-            CurveSolver::Vertical(
-                VerticalData { 
-                    input_method: VerticalDefinition::PVI, 
-                    input_station: "".to_string(), 
-                    input_elevation: "".to_string(), 
-                    input_incoming_grade: "".to_string(), 
-                    input_outgoing_grade: "".to_string(), 
-                    input_length: "".to_string(), 
-                    input_station_interval: "".to_string(), 
-                    input_sight_type: crate::datatypes::SightType::Stopping, 
-                    input_design_speed: "".to_string(),
-                    input_design_standard: DesignStandard::CALTRANS,
-                    sustained_downgrade: false,
-                }),
+            CurveSolver::Vertical(VerticalData {
+                input_method: VerticalDefinition::PVI,
+                input_station: "".to_string(),
+                input_elevation: "".to_string(),
+                input_incoming_grade: "".to_string(),
+                input_outgoing_grade: "".to_string(),
+                input_length: "".to_string(),
+                input_station_interval: "".to_string(),
+                input_sight_type: crate::datatypes::SightType::Stopping,
+                input_design_speed: "".to_string(),
+                input_design_standard: DesignStandard::CALTRANS,
+                sustained_downgrade: false,
+            }),
             Command::none(),
         )
     }
@@ -84,13 +83,11 @@ impl Application for CurveSolver {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         let generic = match message {
-            Message::FullScreenToggle(mode) => {
-                window::change_mode(mode)
-            },
+            Message::FullScreenToggle(mode) => window::change_mode(mode),
             Message::SwitchCurveType => {
                 self.next_page();
                 Command::none()
-            },
+            }
             _ => Command::none(),
         };
 
@@ -100,109 +97,109 @@ impl Application for CurveSolver {
                     Message::InputMethodToggle => {
                         vertical_data.input_method = vertical_data.input_method.next();
                         Command::none()
-                    },
+                    }
                     Message::StationModify(raw_input) => {
                         vertical_data.input_station = raw_input;
                         Command::none()
-                    },
+                    }
                     Message::ElevationModify(raw_input) => {
                         vertical_data.input_elevation = raw_input;
                         Command::none()
-                    },
+                    }
                     Message::IncomingGradeModify(raw_input) => {
                         vertical_data.input_incoming_grade = raw_input;
                         Command::none()
-                    },
+                    }
                     Message::OutgoingGradeModify(raw_input) => {
                         vertical_data.input_outgoing_grade = raw_input;
                         Command::none()
-                    },
+                    }
                     Message::LengthModify(raw_input) => {
                         vertical_data.input_length = raw_input;
                         Command::none()
-                    },
+                    }
                     Message::StationIntervalModify(raw_input) => {
                         vertical_data.input_station_interval = raw_input;
                         Command::none()
-                    },
+                    }
                     Message::DesignStandardToggle => {
-                        vertical_data.input_design_standard = vertical_data.input_design_standard.next();
+                        vertical_data.input_design_standard =
+                            vertical_data.input_design_standard.next();
                         Command::none()
-                    },
+                    }
                     Message::SightTypeToggle => {
                         vertical_data.input_sight_type = vertical_data.input_sight_type.next();
                         Command::none()
-                    },
+                    }
                     Message::DesignSpeed(raw_input) => {
                         vertical_data.input_design_speed = raw_input;
                         Command::none()
-                    },
+                    }
                     Message::SustainedDowngradeCheck(raw_input) => {
                         vertical_data.sustained_downgrade = raw_input;
                         Command::none()
-                    },
-                    _ => {
-                        Command::none()
                     }
+                    _ => Command::none(),
                 };
                 Command::batch(vec![generic, specific])
-            },
+            }
             CurveSolver::Horizontal(horizontal_data) => {
                 let specific = match message {
                     Message::BuildMethodToggle => {
-                        horizontal_data.input_build_method = horizontal_data.input_build_method.next();
+                        horizontal_data.input_build_method =
+                            horizontal_data.input_build_method.next();
                         Command::none()
-                    },
+                    }
                     Message::DesignStandardToggle => {
-                        horizontal_data.input_design_standard = horizontal_data.input_design_standard.next();
+                        horizontal_data.input_design_standard =
+                            horizontal_data.input_design_standard.next();
                         Command::none()
-                    },
+                    }
                     Message::SightTypeToggle => {
                         horizontal_data.input_sight_type = horizontal_data.input_sight_type.next();
                         Command::none()
-                    },
+                    }
                     Message::StationMethodToggle => {
-                        horizontal_data.input_station_method = horizontal_data.input_station_method.next();
+                        horizontal_data.input_station_method =
+                            horizontal_data.input_station_method.next();
                         Command::none()
-                    },
+                    }
                     Message::CurveAngleModify(raw_data) => {
                         horizontal_data.input_curve_angle = raw_data;
                         Command::none()
-                    },
+                    }
                     Message::DesignSpeed(raw_data) => {
                         horizontal_data.input_design_speed = raw_data;
                         Command::none()
-                    },
+                    }
                     Message::LengthModify(raw_data) => {
                         horizontal_data.input_length = raw_data;
                         Command::none()
-                    },
+                    }
                     Message::RadiusModify(raw_data) => {
                         horizontal_data.input_radius = raw_data;
                         Command::none()
-                    },
+                    }
                     Message::StationIntervalModify(raw_data) => {
                         horizontal_data.input_station_interval = raw_data;
                         Command::none()
-                    },
+                    }
                     Message::StationModify(raw_data) => {
                         horizontal_data.input_station = raw_data;
                         Command::none()
-                    },
+                    }
                     Message::MModify(raw_data) => {
                         horizontal_data.input_m = raw_data;
                         Command::none()
-                    },
+                    }
                     Message::SustainedDowngradeCheck(raw_input) => {
                         horizontal_data.sustained_downgrade = raw_input;
                         Command::none()
-                    },
-                    _ => {
-                        Command::none()
                     }
+                    _ => Command::none(),
                 };
                 Command::batch(vec![generic, specific])
-            },
+            }
         }
     }
 
@@ -210,7 +207,10 @@ impl Application for CurveSolver {
         match self {
             CurveSolver::Vertical(vertical_data) => {
                 let title = vertical_header_group();
-                let body = row![vertical_input_group(vertical_data), vertical_output_group(vertical_data)];
+                let body = row![
+                    vertical_input_group(vertical_data),
+                    vertical_output_group(vertical_data)
+                ];
 
                 scrollable(
                     container(column![title, body].spacing(10))
@@ -219,10 +219,13 @@ impl Application for CurveSolver {
                         .center_x(),
                 )
                 .into()
-            },
+            }
             CurveSolver::Horizontal(horizontal_data) => {
                 let title = horizontal_header_group();
-                let body = row![horizontal_input_group(horizontal_data), horizontal_output_group(horizontal_data)];
+                let body = row![
+                    horizontal_input_group(horizontal_data),
+                    horizontal_output_group(horizontal_data)
+                ];
 
                 scrollable(
                     container(column![title, body].spacing(10))
@@ -254,12 +257,8 @@ impl Application for CurveSolver {
                 }),
                 event::Status::Ignored,
             ) => match key_code {
-                KeyCode::Up => {
-                    Some(Message::FullScreenToggle(Mode::Fullscreen))
-                }
-                KeyCode::Down => {
-                    Some(Message::FullScreenToggle(Mode::Windowed))
-                }
+                KeyCode::Up => Some(Message::FullScreenToggle(Mode::Fullscreen)),
+                KeyCode::Down => Some(Message::FullScreenToggle(Mode::Windowed)),
                 _ => None,
             },
             _ => None,
@@ -271,56 +270,41 @@ impl CurveSolver {
     pub fn next_page(&mut self) {
         match self {
             CurveSolver::Vertical(vertical_data) => {
-                *self = CurveSolver::Horizontal(HorizontalData { 
-                    input_station_method: vertical_data.input_method.into(), 
-                    input_build_method: HorizontalBuildDefinition::RadiusCurveAngle, 
-                    input_station: "".to_string(), 
-                    input_length: "".to_string(), 
-                    input_radius: "".to_string(), 
-                    input_curve_angle: "".to_string(), 
-                    input_station_interval: "".to_string(), 
-                    input_sight_type: SightType::Stopping, 
-                    input_design_speed: "".to_string(), 
-                    input_m: "".to_string(),
-                    input_design_standard: DesignStandard::CALTRANS, 
-                    sustained_downgrade: false,
-                })
-            },
+                *self = CurveSolver::Horizontal(HorizontalData::default())
+            }
             CurveSolver::Horizontal(horizontal_data) => {
-                *self = CurveSolver::Vertical(VerticalData { 
-                    input_method: horizontal_data.input_station_method.into(), 
-                    input_station: "".to_string(), 
-                    input_elevation: "".to_string(), 
-                    input_incoming_grade: "".to_string(), 
-                    input_outgoing_grade: "".to_string(), 
-                    input_length: "".to_string(), 
-                    input_station_interval: "".to_string(), 
-                    input_sight_type: SightType::Stopping, 
-                    input_design_speed: "".to_string(), 
-                    input_design_standard: DesignStandard::CALTRANS, 
-                    sustained_downgrade: false,
-                })
-            },
+                *self = CurveSolver::Vertical(VerticalData::default())
+            }
         }
     }
 }
 
-impl Into<HorizontalStationDefinition> for VerticalDefinition {
-    fn into(self) -> HorizontalStationDefinition {
-        match self {
-            Self::PVC => HorizontalStationDefinition::PC,
-            Self::PVI => HorizontalStationDefinition::PI,
-            Self::PVT => HorizontalStationDefinition::PT,
+// impl Into<HorizontalStationDefinition> for VerticalDefinition {
+//     fn into(self) -> HorizontalStationDefinition {
+//         match self {
+//             Self::PVC => HorizontalStationDefinition::PC,
+//             Self::PVI => HorizontalStationDefinition::PI,
+//             Self::PVT => HorizontalStationDefinition::PT,
+//         }
+//     }
+// }
+
+impl From<VerticalDefinition> for HorizontalStationDefinition {
+    fn from(value: VerticalDefinition) -> Self {
+        match value {
+            VerticalDefinition::PVC => HorizontalStationDefinition::PC,
+            VerticalDefinition::PVI => HorizontalStationDefinition::PI,
+            VerticalDefinition::PVT => HorizontalStationDefinition::PT,
         }
     }
 }
 
-impl Into<VerticalDefinition> for HorizontalStationDefinition {
-    fn into(self) -> VerticalDefinition {
-        match self {
-            Self::PC => VerticalDefinition::PVC,
-            Self::PI => VerticalDefinition::PVI,
-            Self::PT => VerticalDefinition::PVT,
+impl From<HorizontalStationDefinition> for VerticalDefinition {
+    fn from(value: HorizontalStationDefinition) -> Self {
+        match value {
+            HorizontalStationDefinition::PC => VerticalDefinition::PVC,
+            HorizontalStationDefinition::PI => VerticalDefinition::PVI,
+            HorizontalStationDefinition::PT => VerticalDefinition::PVT,
         }
     }
 }

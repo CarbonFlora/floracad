@@ -1,6 +1,6 @@
 // use anyhow::{Result, anyhow};
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 use crate::datatypes::{DesignStandard, SightType};
 
@@ -51,23 +51,27 @@ lazy_static! {
     };
 }
 
-pub fn get_min_sight(design_speed: i32, design_standard: DesignStandard, sight_type: SightType) -> Option<f64> {
+pub fn get_min_sight(
+    design_speed: i32,
+    design_standard: DesignStandard,
+    sight_type: SightType,
+) -> Option<f64> {
     match design_standard {
         DesignStandard::AASHTO => {
             let row = AASHTO_SIGHT_TABLE.get(&design_speed)?;
             match sight_type {
-                SightType::Stopping => return Some(row.0),
-                SightType::Passing => return Some(row.1),
-                SightType::Decision => return None,
-            };
-        },
+                SightType::Stopping => Some(row.0),
+                SightType::Passing => Some(row.1),
+                SightType::Decision => None,
+            }
+        }
         DesignStandard::CALTRANS => {
             let row = HDM_SIGHT_TABLE.get(&design_speed)?;
             match sight_type {
-                SightType::Stopping => return Some(row.0),
-                SightType::Passing => return Some(row.1),
-                SightType::Decision => return Some(row.2),
-            };
-        },
-    };
+                SightType::Stopping => Some(row.0),
+                SightType::Passing => Some(row.1),
+                SightType::Decision => Some(row.2),
+            }
+        }
+    }
 }
