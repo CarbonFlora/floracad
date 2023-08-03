@@ -195,6 +195,10 @@ impl Application for CurveSolver {
                         horizontal_data.input_radius = raw_data;
                         Command::none()
                     }
+                    Message::TangentModify(raw_data) => {
+                        horizontal_data.input_tangent = raw_data;
+                        Command::none()
+                    }
                     Message::StationIntervalModify(raw_data) => {
                         horizontal_data.input_station_interval = raw_data;
                         Command::none()

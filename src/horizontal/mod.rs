@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::f64::consts::PI;
 
 use crate::datatypes::*;
@@ -62,40 +62,73 @@ pub struct HorizontalData {
 
 impl HorizontalData {
     fn to_dimensions(&self) -> Result<HorizontalDimensions> {
+        let (
+            radius,
+            curve_angle,
+            curve_length,
+            tangent,
+            external,
+            middle_ordinate,
+            long_chord,
+            curve_length_100,
+            design_speed,
+            sight_distance,
+        );
+
         match self.input_build_method {
             HorizontalBuildDefinition::RadiusCurveAngle => {
-                let radius = coerce_length(&self.input_radius)?;
-                let curve_angle = Angle::from(self.input_curve_angle.as_str())?;
-                let curve_length = radius * curve_angle.decimal_degrees * PI / 180.0;
-                let tangent = radius * (curve_angle.radians / 2.0).tan();
-                let external = radius * (1.0 / (curve_angle.radians / 2.0).cos() - 1.0);
-                let middle_ordinate = radius * (1.0 - (curve_angle.radians / 2.0).cos());
-                let long_chord = 2.0 * radius * (curve_angle.radians / 2.0).sin();
-                let curve_length_100 = Angle {
+                radius = coerce_length(&self.input_radius)?;
+                curve_angle = Angle::from(self.input_curve_angle.as_str())?;
+
+                curve_length = radius * curve_angle.decimal_degrees * PI / 180.0;
+                tangent = radius * (curve_angle.radians / 2.0).tan();
+                external = radius * (1.0 / (curve_angle.radians / 2.0).cos() - 1.0);
+                middle_ordinate = radius * (1.0 - (curve_angle.radians / 2.0).cos());
+                long_chord = 2.0 * radius * (curve_angle.radians / 2.0).sin();
+                curve_length_100 = Angle {
                     radians: 5729.6 / radius * PI / 180.0,
                     decimal_degrees: 5729.6 / radius,
                 };
                 let m = coerce_length(&self.input_m).unwrap_or_default();
 
-                let design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
-                let sight_distance = radius / 28.65 * ((radius - m) / radius).acos() * 180.0 / PI;
-
-                Ok(HorizontalDimensions {
-                    radius,
-                    curve_length,
-                    tangent,
-                    long_chord,
-                    middle_ordinate,
-                    external,
-                    curve_length_100,
-                    curve_angle,
-                    design_speed,
-                    sight_distance,
-                })
+                design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
+                sight_distance = radius / 28.65 * ((radius - m) / radius).acos() * 180.0 / PI;
             }
-            // HorizontalBuildDefinition::RadiusTangent => {}
-            _ => Err(anyhow!("This method hasn't been implimented.")),
+            HorizontalBuildDefinition::RadiusTangent => {
+                tangent = coerce_length(&self.input_tangent)?;
+                radius = coerce_length(&self.input_radius)?;
+
+                curve_angle = Angle {
+                    radians: (tangent / radius).atan() * 2.,
+                    decimal_degrees: ((tangent / radius).atan() * 2.) * 180. / PI,
+                };
+                curve_length = radius * curve_angle.decimal_degrees * PI / 180.0;
+                external = radius * (1.0 / (curve_angle.radians / 2.0).cos() - 1.0);
+                middle_ordinate = radius * (1.0 - (curve_angle.radians / 2.0).cos());
+                long_chord = 2.0 * radius * (curve_angle.radians / 2.0).sin();
+                curve_length_100 = Angle {
+                    radians: 5729.6 / radius * PI / 180.0,
+                    decimal_degrees: 5729.6 / radius,
+                };
+                let m = coerce_length(&self.input_m).unwrap_or_default();
+
+                design_speed = coerce_speed(&self.input_design_speed).unwrap_or_default();
+                sight_distance = radius / 28.65 * ((radius - m) / radius).acos() * 180.0 / PI;
+            } // _ => return Err(anyhow!("This method hasn't been implimented.")),
         }
+
+        Ok(HorizontalDimensions {
+            radius,
+            curve_length,
+            tangent,
+            long_chord,
+            middle_ordinate,
+            external,
+            curve_length_100,
+            curve_angle,
+            design_speed,
+            sight_distance,
+        })
     }
 
     fn to_stations(&self, dimensions: &HorizontalDimensions) -> Result<HorizontalStations> {
