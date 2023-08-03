@@ -31,11 +31,11 @@ pub struct HorizontalCurve {
 }
 
 impl HorizontalCurve {
-    pub fn is_compliant(&self, design_standard: DesignStandard, sight_type: SightType) -> Result<Option<(bool, f64)>> {
+    pub fn is_compliant(&self, design_standard: DesignStandard, sight_type: SightType, adjustment: f64) -> Result<Option<(bool, f64)>> {
         let min_sight = get_min_sight(self.dimensions.design_speed, design_standard, sight_type);
         match min_sight {
             Some(w) => {
-                Ok(Some(((self.dimensions.sight_distance>=w), w)))
+                Ok(Some(((self.dimensions.sight_distance>=w*adjustment), w*adjustment)))
             },
             None => Err(anyhow!("Design speed isn't specified in the manual.")),
         }

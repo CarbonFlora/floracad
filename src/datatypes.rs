@@ -1,9 +1,11 @@
 use std::f64::consts::PI;
 use std::fmt;
 
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 
-#[derive(Debug, Clone, Copy)]
+use crate::vertical::ObstacleType;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Station {
     pub value: f64,
     pub elevation: f64,
@@ -11,20 +13,42 @@ pub struct Station {
 
 impl fmt::Display for Station {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "STA: {:.0}+{:.2}, ELEV: {:.2}", (self.value/100.0).trunc(), self.value-(self.value/100.0).trunc()*100.0, self.elevation)?;
+        write!(
+            f,
+            "STA: {:.0}+{:.2}, ELEV: {:.2}",
+            (self.value / 100.0).trunc(),
+            self.value - (self.value / 100.0).trunc() * 100.0,
+            self.elevation
+        )?;
         Ok(())
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CurveDetail {
-   pub interval: Vec<Station>,
+    pub interval: Vec<Station>,
 }
 
 impl fmt::Display for CurveDetail {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         for station in &self.interval {
             writeln!(f, "> {:.2}", station)?;
+        }
+        Ok(())
+    }
+}
+
+pub type ObstacleStation = (Station, ObstacleType);
+
+#[derive(Debug, Clone, Default)]
+pub struct ObstacleDetail {
+    pub interval: Vec<ObstacleStation>,
+}
+
+impl fmt::Display for ObstacleDetail {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        for station in &self.interval {
+            writeln!(f, "> {:.2} {:?}", station.0, station.1)?;
         }
         Ok(())
     }
@@ -38,48 +62,74 @@ pub struct Angle {
 
 impl fmt::Display for Angle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "DMS:{} | DD:{:.2} | RAD:{:.2}", self.to_dms(), self.decimal_degrees, self.radians)?;
+        write!(
+            f,
+            "DMS:{} | DD:{:.2} | RAD:{:.2}",
+            self.to_dms(),
+            self.decimal_degrees,
+            self.radians
+        )?;
         Ok(())
     }
 }
 
 impl Angle {
     pub fn from(raw_data: &str) -> Result<Self> {
-        if raw_data.chars().any(|c| matches!(c,  'd'|'\''|'\"')) {
-            let parts = raw_data.trim().split_terminator(['d','\'','\"']).collect::<Vec<&str>>();
-            let mut parts_iter = parts.iter();
-            let mut decimal_degrees = 0.0;
-            if raw_data.contains('d') {
-                decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?;
-            }
-            if raw_data.contains('\'') {
-                decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?/60.0;
-            }
-            if raw_data.contains('\"') {
-                decimal_degrees+=parts_iter.next().unwrap_or_else(|| &"0.0").parse::<f64>()?/3600.0;
-            }
+        if !raw_data.is_empty() {
+            if raw_data.chars().any(|c| matches!(c, 'd' | '\'' | '\"')) {
+                let parts = raw_data
+                    .trim()
+                    .split_terminator(['d', '\'', '\"'])
+                    .collect::<Vec<&str>>();
+                let mut parts_iter = parts.iter();
+                let mut decimal_degrees = 0.0;
+                if raw_data.contains('d') {
+                    decimal_degrees += parts_iter.next().unwrap_or(&"0.0").parse::<f64>()?;
+                }
+                if raw_data.contains('\'') {
+                    decimal_degrees += parts_iter.next().unwrap_or(&"0.0").parse::<f64>()? / 60.0;
+                }
+                if raw_data.contains('\"') {
+                    decimal_degrees += parts_iter.next().unwrap_or(&"0.0").parse::<f64>()? / 3600.0;
+                }
 
-            return Ok(Angle {radians: decimal_degrees*PI/180.0, decimal_degrees})
-        } else if raw_data.chars().all(|c| matches!(c, '0'..='9'|'.')) {
-            let decimal_degrees = raw_data.trim().parse::<f64>()?;
+                if decimal_degrees >= 180. {
+                    return Err(Error::OversizedAngle.into());
+                }
 
-            return Ok(Angle {radians: decimal_degrees*PI/180.0, decimal_degrees})
+                return Ok(Angle {
+                    radians: decimal_degrees * PI / 180.0,
+                    decimal_degrees,
+                });
+            } else if raw_data.chars().all(|c| matches!(c, '0'..='9' | '.')) {
+                let decimal_degrees = raw_data.trim().parse::<f64>()?;
+
+                if decimal_degrees >= 180. {
+                    return Err(Error::OversizedAngle.into());
+                }
+
+                return Ok(Angle {
+                    radians: decimal_degrees * PI / 180.0,
+                    decimal_degrees,
+                });
+            }
         }
 
-        Err(anyhow!("Failed to parse the given angle."))
+        Err(Error::ParseAngle.into())
     }
 
     pub fn to_dms(&self) -> String {
         let degrees = self.decimal_degrees.trunc();
-        let minutes = ((self.decimal_degrees-degrees)*60.0).trunc();
-        let seconds = (((self.decimal_degrees-degrees)*60.0)-minutes)*60.0;
+        let minutes = ((self.decimal_degrees - degrees) * 60.0).trunc();
+        let seconds = (((self.decimal_degrees - degrees) * 60.0) - minutes) * 60.0;
 
         format!("{:.0}d{:.0}\'{:.2}\"", degrees, minutes, seconds)
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum SightType {
+    #[default]
     Stopping,
     Passing,
     Decision,
@@ -95,9 +145,10 @@ impl SightType {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum DesignStandard {
     AASHTO,
+    #[default]
     CALTRANS,
 }
 
@@ -110,44 +161,96 @@ impl DesignStandard {
     }
 }
 
-pub fn coerce_station_value(string: &String) -> Result<f64> {
+pub fn coerce_station_value(string: &str) -> Result<f64> {
     let mut station_vec = vec![];
     for slice in string.split_terminator('+') {
-        station_vec.push(slice.trim().parse::<f64>().map_err(|x| anyhow!("Station is misconfigured."))?);
+        station_vec.push(
+            slice
+                .trim()
+                .parse::<f64>()
+                .map_err(|x| Error::ParseStation)?,
+        );
     }
     if let (Some(large), Some(small)) = (station_vec.first(), station_vec.get(1)) {
-        Ok(large*100.0+small)
+        Ok(large * 100.0 + small * large.signum())
     } else {
-        Err(anyhow!("Station is misconfigured."))
+        Err(Error::ParseStation.into())
     }
 }
 
-pub fn coerce_elevation(string: &String) -> Result<f64> {
-    let slice = string.trim().parse::<f64>().map_err(|x| anyhow!("Elevation is misconfigured."))?;
+pub fn coerce_elevation(string: &str) -> Result<f64> {
+    let slice = string
+        .trim()
+        .parse::<f64>()
+        .map_err(|x| Error::ParseElevation)?;
 
     Ok(slice)
 }
 
-pub fn coerce_length(string: &String) -> Result<f64> {
-    let slice = string.trim().parse::<f64>().map_err(|x| anyhow!("Length is misconfigured."))?;
+pub fn coerce_length(string: &str) -> Result<f64> {
+    let slice = string
+        .trim()
+        .parse::<f64>()
+        .map_err(|x| Error::ParseLength)?;
 
     Ok(slice)
 }
 
-pub fn coerce_speed(string: &String) -> Result<i32> {
-    let slice = string.trim().parse::<i32>().map_err(|x| anyhow!("Speed is misconfigured."))?;
+pub fn coerce_speed(string: &str) -> Result<i32> {
+    let slice = string
+        .trim()
+        .parse::<i32>()
+        .map_err(|x| Error::ParseSpeed)?;
 
     Ok(slice)
 }
 
-pub fn coerce_grade(string: &String) -> Result<f64> {
-    let mut grade = string.trim().trim_end_matches('%').parse::<f64>().map_err(|x| anyhow!("Grade is misconfigured."))?;
+pub fn coerce_grade(string: &str) -> Result<f64> {
+    let mut grade = string
+        .trim()
+        .trim_end_matches('%')
+        .parse::<f64>()
+        .map_err(|x| Error::ParseGrade)?;
 
     if string.trim().ends_with('%') {
         grade /= 100.0;
     }
 
     Ok(grade)
+}
+
+pub fn calc_adjustment(bools: bool) -> f64 {
+    let mut adjustment = 1.;
+    if bools {
+        adjustment += 0.2;
+    }
+    adjustment
+}
+
+/// Parsing errors.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Station is misconfigured.
+    #[error("Station is misconfigured.")]
+    ParseStation,
+    /// Elevation is misconfigured.
+    #[error("Elevation is misconfigured.")]
+    ParseElevation,
+    /// Length is misconfigured.
+    #[error("Length is misconfigured.")]
+    ParseLength,
+    /// Speed is misconfigured.
+    #[error("Speed is misconfigured.")]
+    ParseSpeed,
+    /// Grade is misconfigured.
+    #[error("Grade is misconfigured.")]
+    ParseGrade,
+    /// Angle is misconfigured.
+    #[error("Angle is misconfigured.")]
+    ParseAngle,
+    /// Angle is too large.
+    #[error("Angle is too large.")]
+    OversizedAngle,
 }
 
 #[cfg(test)]
@@ -157,8 +260,15 @@ mod data_tests {
 
     #[test]
     fn from_angle() {
-        let angles = vec!["10d32\'60.1\"","1d0\'0\"","10d","10\'","10\"","10\'12\""];
-        
+        let angles = vec![
+            "10d32\'60.1\"",
+            "1d0\'0\"",
+            "10d",
+            "10\'",
+            "10\"",
+            "10\'12\"",
+        ];
+
         for angle in angles {
             match Angle::from(angle) {
                 Ok(w) => println!("O: {:?}", w),
@@ -169,8 +279,15 @@ mod data_tests {
 
     #[test]
     fn dd_dms_dd_eq() -> Result<()> {
-        let angles = vec!["10d32\'60.1\"","1d0\'0\"","10d","10\'","10\"","10\'12\""];
-        
+        let angles = vec![
+            "10d32\'60.1\"",
+            "1d0\'0\"",
+            "10d",
+            "10\'",
+            "10\"",
+            "10\'12\"",
+        ];
+
         for angle in angles {
             let w1 = Angle::from(angle)?;
             let w2 = w1.to_dms();
