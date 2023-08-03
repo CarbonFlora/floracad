@@ -3,6 +3,8 @@ use anyhow::{anyhow, Result};
 use crate::tables::get_min_sight;
 use crate::vertical::*;
 
+type ObstacleReturn = (bool, Option<ObstacleStation>, Option<Station>, f64);
+
 #[derive(Debug, Clone, Copy)]
 pub struct VerticalStations {
     pub pvc: Station,
@@ -212,5 +214,44 @@ impl VerticalCurve {
             }
             None => Err(anyhow!("Design speed isn't specified in the manual.")),
         }
+    }
+
+    pub fn within_obstacles(&self, obstacle_detail: &ObstacleDetail) -> Result<ObstacleReturn> {
+        for obstacle in &obstacle_detail.interval {
+            let curve_station = self.spot_station_with_station(obstacle.0)?;
+            let delta = (curve_station.elevation - obstacle.0.elevation).abs();
+
+            match obstacle.1 {
+                ObstacleType::Above => {
+                    if curve_station.elevation >= obstacle.0.elevation {
+                        return Ok((false, Some(*obstacle), Some(curve_station), delta));
+                    }
+                }
+                ObstacleType::Below => {
+                    if curve_station.elevation <= obstacle.0.elevation {
+                        return Ok((false, Some(*obstacle), Some(curve_station), delta));
+                    }
+                }
+            };
+        }
+
+        Ok((true, None, None, 0.))
+    }
+
+    fn spot_station_with_station(&self, station: Station) -> Result<Station> {
+        if station.value >= self.stations.pvc.value && station.value <= self.stations.pvt.value {
+            let distance_delta = station.value - self.stations.pvc.value;
+            let a = (self.dimensions.outgoing_grade - self.dimensions.incoming_grade)
+                / (2.0 * self.dimensions.curve_length);
+            let elevation = self.stations.pvc.elevation
+                + self.dimensions.incoming_grade * distance_delta
+                + a * distance_delta.powi(2);
+            return Ok(Station {
+                value: station.value,
+                elevation,
+            });
+        }
+
+        Err(anyhow!("{} is outside the curve.", station))
     }
 }

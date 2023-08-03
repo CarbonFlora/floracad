@@ -26,6 +26,22 @@ impl VerticalDefinition {
     }
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub enum ObstacleType {
+    #[default]
+    Above, //like a bridge
+    Below, //like a underground water pipe
+}
+
+impl ObstacleType {
+    pub fn next(self) -> Self {
+        match self {
+            ObstacleType::Above => ObstacleType::Below,
+            ObstacleType::Below => ObstacleType::Above,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct VerticalData {
     pub input_method: VerticalDefinition,
@@ -39,6 +55,10 @@ pub struct VerticalData {
     pub input_design_speed: String,
     pub input_design_standard: DesignStandard,
     pub sustained_downgrade: bool,
+    pub input_obstacle_station: String,
+    pub input_obstacle_elevation: String,
+    pub input_obstacle_type: ObstacleType,
+    pub obstacles: ObstacleDetail,
 }
 
 impl VerticalData {

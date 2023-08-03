@@ -38,6 +38,16 @@ pub fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
         vertical_data.sustained_downgrade,
         Message::SustainedDowngradeCheck,
     );
+    let obstacle_station = text_input("Station", &vertical_data.input_obstacle_station)
+        .on_input(Message::ObstacleStation);
+    let obstacle_elevation = text_input("Elevation", &vertical_data.input_obstacle_elevation)
+        .on_input(Message::ObstacleElevation);
+    let obstacle_type_toggle = button(text(obs_type_toggle_arrow(
+        vertical_data.input_obstacle_type,
+    )))
+    .on_press(Message::ObstacleTypeToggle);
+    let obstacle_add = button(text("+")).on_press(Message::AddObstacle);
+    let obstacle_remove = button(text("-")).on_press(Message::RemoveObstacle);
 
     let row_1 = row![
         text(format!("{:?} Station:", &vertical_data.input_method).as_str()),
@@ -62,11 +72,28 @@ pub fn vertical_input_group(vertical_data: &VerticalData) -> Column<Message> {
     ]
     .spacing(h_s);
     let row_8 = row![sustained_downgrade].spacing(h_s);
+    let row_9 = row![
+        text("Obstacles:"),
+        obstacle_station,
+        obstacle_elevation,
+        obstacle_type_toggle,
+        obstacle_add,
+        obstacle_remove
+    ]
+    .spacing(h_s);
+    let row_10 = row![text(format!("{}", vertical_data.obstacles))].spacing(h_s);
 
-    column![row_1, row_2, row_3, row_4, row_5, row_6, row_7, row_8]
+    column![row_1, row_2, row_3, row_4, row_5, row_6, row_7, row_8, row_9, row_10]
         .spacing(10)
         .width(Length::FillPortion(2))
         .padding(10)
+}
+
+fn obs_type_toggle_arrow(arrow_type: ObstacleType) -> String {
+    match arrow_type {
+        ObstacleType::Above => "/\\".to_string(),
+        ObstacleType::Below => "\\/".to_string(),
+    }
 }
 
 pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
@@ -80,6 +107,7 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
         Ok(w) => {
             let vertical_curve = text(format!("{}", w));
             column = column.push(vertical_curve);
+            column = column.push(text(format!("~ Extreme\n{}", w.get_extreme())));
 
             match w.is_compliant(
                 vertical_data.input_design_standard,
@@ -124,7 +152,22 @@ pub fn vertical_output_group(vertical_data: &VerticalData) -> Column<Message> {
                 }
             }
 
-            column = column.push(text(format!("~ Extreme\n{}", w.get_extreme())));
+            let obstacle_calc = w.within_obstacles(&vertical_data.obstacles);
+            match obstacle_calc {
+                Ok(w) => {
+                    if w.0 {
+                        column = column.push(text("~ Obstacle Validation\nCompliant."));
+                    } else {
+                        column = column.push(text(format!(
+                            "~ Obstacle Validation\nNoncompliant at {} {:?}.\nDelta: {:.2}",
+                            w.1.unwrap().0,
+                            w.1.unwrap().1, //should be unfallible unwrap.
+                            w.3
+                        )));
+                    }
+                }
+                Err(e) => column = column.push(text(format!("~ Obstacle Validation\n{}", e))),
+            }
 
             if vertical_data.input_station_interval.is_empty() {
                 column = column.push(text("~ Interval Stations\nEnter an Interval."));

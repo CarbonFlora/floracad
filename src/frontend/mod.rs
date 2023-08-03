@@ -1,3 +1,4 @@
+use anyhow::Result;
 use iced::alignment::{self};
 use iced::keyboard::{self, KeyCode, Modifiers};
 use iced::theme::Theme;
@@ -146,11 +147,11 @@ impl Application for CurveSolver {
                         Command::none()
                     }
                     Message::AddObstacle => {
-                        add_to_list(&mut self);
+                        let _ = self.add_to_list();
                         Command::none()
                     }
                     Message::RemoveObstacle => {
-                        vertical_data.obstacles.pop();
+                        vertical_data.obstacles.interval.pop();
                         Command::none()
                     }
                     _ => Command::none(),
@@ -290,6 +291,22 @@ impl CurveSolver {
                 *self = CurveSolver::Vertical(VerticalData::default())
             }
         }
+    }
+
+    pub fn add_to_list(&mut self) -> Result<()> {
+        match self {
+            CurveSolver::Vertical(vertical_data) => {
+                let value = coerce_station_value(&vertical_data.input_obstacle_station)?;
+                let elevation = coerce_elevation(&vertical_data.input_obstacle_elevation)?;
+                let station = Station { value, elevation };
+                vertical_data
+                    .obstacles
+                    .interval
+                    .push((station, vertical_data.input_obstacle_type));
+            }
+            CurveSolver::Horizontal(horizontal_data) => {}
+        }
+        Ok(())
     }
 }
 

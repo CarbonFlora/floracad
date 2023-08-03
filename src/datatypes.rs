@@ -3,6 +3,8 @@ use std::fmt;
 
 use anyhow::Result;
 
+use crate::vertical::ObstacleType;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Station {
     pub value: f64,
@@ -22,7 +24,7 @@ impl fmt::Display for Station {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CurveDetail {
     pub interval: Vec<Station>,
 }
@@ -31,6 +33,22 @@ impl fmt::Display for CurveDetail {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         for station in &self.interval {
             writeln!(f, "> {:.2}", station)?;
+        }
+        Ok(())
+    }
+}
+
+pub type ObstacleStation = (Station, ObstacleType);
+
+#[derive(Debug, Clone, Default)]
+pub struct ObstacleDetail {
+    pub interval: Vec<ObstacleStation>,
+}
+
+impl fmt::Display for ObstacleDetail {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        for station in &self.interval {
+            writeln!(f, "> {:.2} {:?}", station.0, station.1)?;
         }
         Ok(())
     }
