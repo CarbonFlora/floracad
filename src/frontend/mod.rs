@@ -43,6 +43,11 @@ pub enum Message {
     DesignStandardToggle,
     SightTypeToggle,
     DesignSpeed(String),
+    ObstacleStation(String),
+    ObstacleElevation(String),
+    ObstacleTypeToggle,
+    AddObstacle,
+    RemoveObstacle,
     // Horizontal
     StationMethodToggle,
     BuildMethodToggle,
@@ -125,6 +130,27 @@ impl Application for CurveSolver {
                     }
                     Message::SustainedDowngradeCheck(raw_input) => {
                         vertical_data.sustained_downgrade = raw_input;
+                        Command::none()
+                    }
+                    Message::ObstacleStation(raw_input) => {
+                        vertical_data.input_obstacle_station = raw_input;
+                        Command::none()
+                    }
+                    Message::ObstacleElevation(raw_input) => {
+                        vertical_data.input_obstacle_elevation = raw_input;
+                        Command::none()
+                    }
+                    Message::ObstacleTypeToggle => {
+                        vertical_data.input_obstacle_type =
+                            vertical_data.input_obstacle_type.next();
+                        Command::none()
+                    }
+                    Message::AddObstacle => {
+                        add_to_list(&mut self);
+                        Command::none()
+                    }
+                    Message::RemoveObstacle => {
+                        vertical_data.obstacles.pop();
                         Command::none()
                     }
                     _ => Command::none(),
