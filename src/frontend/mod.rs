@@ -23,6 +23,8 @@ use crate::vertical::*;
 
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
+const H_S: u16 = 7;
+
 #[derive(Debug)]
 pub enum CurveSolver {
     Vertical(VerticalData),
@@ -391,7 +393,11 @@ fn right_carrot_icon() -> Text<'static> {
     icon2('\u{51}')
 }
 
-const SUBTITLE_SIZE: u16 = 20;
+fn notification_icon() -> Text<'static> {
+    icon2('\u{49}')
+}
+
+const SUBTITLE_SIZE: u16 = 22;
 
 fn subtitle(str: &str) -> Text<'static> {
     text(str).size(SUBTITLE_SIZE)
