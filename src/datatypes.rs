@@ -184,25 +184,33 @@ pub fn coerce_station_value(string: &str) -> Result<f64, Error> {
     Ok(station_vec[0] * 100.0 + station_vec[1] * station_vec[0].signum())
 }
 
-pub fn coerce_elevation(string: &str) -> Result<f64> {
-    let slice = string
-        .trim()
-        .parse::<f64>()
-        .map_err(|x| Error::ParseElevation)?;
+pub fn coerce_elevation(string: &str) -> Result<f64, Error> {
+    if string.is_empty() {
+        Err(Error::NoElevValue)
+    } else {
+        let slice = string
+            .trim()
+            .parse::<f64>()
+            .map_err(|x| Error::ParseElevation)?;
 
-    Ok(slice)
+        Ok(slice)
+    }
 }
 
-pub fn coerce_length(string: &str) -> Result<f64> {
-    let slice = string
-        .trim()
-        .parse::<f64>()
-        .map_err(|x| Error::ParseLength)?;
+pub fn coerce_length(string: &str) -> Result<f64, Error> {
+    if string.is_empty() {
+        Err(Error::NoLenValue)
+    } else {
+        let slice = string
+            .trim()
+            .parse::<f64>()
+            .map_err(|x| Error::ParseLength)?;
 
-    Ok(slice)
+        Ok(slice)
+    }
 }
 
-pub fn coerce_speed(string: &str) -> Result<i32> {
+pub fn coerce_speed(string: &str) -> Result<i32, Error> {
     let slice = string
         .trim()
         .parse::<i32>()
@@ -211,7 +219,7 @@ pub fn coerce_speed(string: &str) -> Result<i32> {
     Ok(slice)
 }
 
-pub fn coerce_grade(string: &str) -> Result<f64> {
+pub fn coerce_grade(string: &str) -> Result<f64, Error> {
     let mut grade = string
         .trim()
         .trim_end_matches('%')
@@ -255,19 +263,25 @@ pub enum Error {
     #[error("Only one negative sign is required.")]
     DifferentSign,
     /// Elevation is misconfigured.
-    #[error("Elevation is misconfigured.")]
+    #[error("Elevation is misconfigured with unexpected symbol.")]
     ParseElevation,
-    /// Length is misconfigured.
-    #[error("Length is misconfigured.")]
+    /// Elevation is required.
+    #[error("Elevation is required.")]
+    NoElevValue,
+    /// Length is misconfigured with unexpected symbol.
+    #[error("Length is misconfigured with unexpected symbol.")]
     ParseLength,
-    /// Speed is misconfigured.
-    #[error("Speed is misconfigured.")]
+    /// Length is required.
+    #[error("Length is required.")]
+    NoLenValue,
+    /// Speed is misconfigured with unexpected symbol.
+    #[error("Speed is misconfigured with unexpected symbol.")]
     ParseSpeed,
-    /// Grade is misconfigured.
-    #[error("Grade is misconfigured.")]
+    /// Grade is misconfigured with unexpected symbol.
+    #[error("Grade is misconfigured with unexpected symbol.")]
     ParseGrade,
-    /// Angle is misconfigured.
-    #[error("Angle is misconfigured.")]
+    /// Angle is misconfigured with unexpected symbol.
+    #[error("Angle is misconfigured with unexpected symbol.")]
     ParseAngle,
     /// Angle is too large.
     #[error("Angle is too large.")]

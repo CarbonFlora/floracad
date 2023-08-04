@@ -157,7 +157,7 @@ impl VerticalData {
                             obstacle_column = obstacle_column.push(row![
                                 good_check_icon(),
                                 text(format!(
-                                    "Obstacle: {} {:?} Actual: {} Delta: {:2}",
+                                    "Obstacle: {} {:?}\nActual: {}\nDelta: {:2}",
                                     w.1 .0, w.1 .1, w.2, w.3
                                 ))
                             ]);
@@ -165,7 +165,7 @@ impl VerticalData {
                             obstacle_column = obstacle_column.push(row![
                                 exclam_icon(),
                                 text(format!(
-                                    "Obstacle: {} {:?} Actual: {} Delta: {:2}",
+                                    "Obstacle: {} {:?}\nActual: {}\nDelta: {:2}",
                                     w.1 .0, w.1 .1, w.2, w.3
                                 ))
                             ]);
