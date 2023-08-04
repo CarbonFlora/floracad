@@ -25,8 +25,6 @@ pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Messag
         .on_input(Message::CurveAngleModify);
     let tangent_modify =
         text_input("(123)", &horizontal_data.input_tangent).on_input(Message::TangentModify);
-    // let length_modify = text_input("(100)", &horizontal_data.input_length)
-    //     .on_input(Message::LengthModify);
     let interval_modify = text_input("(00+25)", &horizontal_data.input_station_interval)
         .on_input(Message::StationIntervalModify);
     let toggle_design_standard = button(text("A")).on_press(Message::DesignStandardToggle);
