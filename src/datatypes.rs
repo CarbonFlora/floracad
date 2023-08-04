@@ -161,21 +161,27 @@ impl DesignStandard {
     }
 }
 
-pub fn coerce_station_value(string: &str) -> Result<f64> {
+pub fn coerce_station_value(string: &str) -> Result<f64, Error> {
     let mut station_vec = vec![];
     for slice in string.split_terminator('+') {
         station_vec.push(
             slice
                 .trim()
                 .parse::<f64>()
-                .map_err(|x| Error::ParseStation)?,
+                .map_err(|x| Error::ParseNonFloat)?,
         );
     }
-    if let (Some(large), Some(small)) = (station_vec.first(), station_vec.get(1)) {
-        Ok(large * 100.0 + small * large.signum())
-    } else {
-        Err(Error::ParseStation.into())
+    match station_vec.len() {
+        0 => return Err(Error::NoValue),
+        1 => return Err(Error::NoPlus),
+        3.. => return Err(Error::ExcessiveValues),
+        _ => (),
+    };
+    if station_vec[1].is_sign_negative() {
+        return Err(Error::DifferentSign);
     }
+
+    Ok(station_vec[0] * 100.0 + station_vec[1] * station_vec[0].signum())
 }
 
 pub fn coerce_elevation(string: &str) -> Result<f64> {
@@ -233,6 +239,21 @@ pub enum Error {
     /// Station is misconfigured.
     #[error("Station is misconfigured.")]
     ParseStation,
+    /// Station is misconfigured with unexpected symbol.
+    #[error("Station is misconfigured with unexpected symbol.")]
+    ParseNonFloat,
+    /// Station is required.
+    #[error("Station is required.")]
+    NoValue,
+    /// Station requires a "+" sign.
+    #[error("Station requires a \"+\" sign.")]
+    NoPlus,
+    /// Station can only have one "+" sign.
+    #[error("Station can only have one \"+\" sign.")]
+    ExcessiveValues,
+    /// Only one negative sign is required.
+    #[error("Only one negative sign is required.")]
+    DifferentSign,
     /// Elevation is misconfigured.
     #[error("Elevation is misconfigured.")]
     ParseElevation,
