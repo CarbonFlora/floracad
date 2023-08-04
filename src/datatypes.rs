@@ -220,17 +220,21 @@ pub fn coerce_speed(string: &str) -> Result<i32, Error> {
 }
 
 pub fn coerce_grade(string: &str) -> Result<f64, Error> {
-    let mut grade = string
-        .trim()
-        .trim_end_matches('%')
-        .parse::<f64>()
-        .map_err(|x| Error::ParseGrade)?;
+    if string.is_empty() {
+        Err(Error::NoGradeValue)
+    } else {
+        let mut grade = string
+            .trim()
+            .trim_end_matches('%')
+            .parse::<f64>()
+            .map_err(|x| Error::ParseGrade)?;
 
-    if string.trim().ends_with('%') {
-        grade /= 100.0;
+        if string.trim().ends_with('%') {
+            grade /= 100.0;
+        }
+
+        Ok(grade)
     }
-
-    Ok(grade)
 }
 
 pub fn calc_adjustment(bools: bool) -> f64 {
@@ -277,6 +281,9 @@ pub enum Error {
     /// Speed is misconfigured with unexpected symbol.
     #[error("Speed is misconfigured with unexpected symbol.")]
     ParseSpeed,
+    /// Grade is required.
+    #[error("Grade is required.")]
+    NoGradeValue,
     /// Grade is misconfigured with unexpected symbol.
     #[error("Grade is misconfigured with unexpected symbol.")]
     ParseGrade,
