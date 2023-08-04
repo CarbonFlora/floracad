@@ -3,7 +3,7 @@ use iced::widget::{checkbox, column, text, Column};
 use crate::frontend::*;
 
 pub fn horizontal_header_group<'a>() -> Column<'a, Message> {
-    let title = text("Horizontal Curves (LARGELY UNTESTED)")
+    let title = text("Horizontal Curves (Pre-Release)")
         .width(Length::Fill)
         .size(50)
         .style(Color::from([0.5, 0.5, 0.5]))
@@ -15,10 +15,10 @@ pub fn horizontal_header_group<'a>() -> Column<'a, Message> {
 pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Message> {
     let h_s = 5;
 
-    let toggle_station = button(text(">")).on_press(Message::StationMethodToggle);
+    let toggle_station = button(stext('S')).on_press(Message::StationMethodToggle);
     let station_modify =
         text_input("(12+34)", &horizontal_data.input_station).on_input(Message::StationModify);
-    let toggle_build = button(text("#")).on_press(Message::BuildMethodToggle);
+    let toggle_build = button(cycle_icon()).on_press(Message::BuildMethodToggle);
     let radius_modify =
         text_input("(100)", &horizontal_data.input_radius).on_input(Message::RadiusModify);
     let curve_angle_modify = text_input("(60d13\'42\")", &horizontal_data.input_curve_angle)
@@ -27,8 +27,8 @@ pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Messag
         text_input("(123)", &horizontal_data.input_tangent).on_input(Message::TangentModify);
     let interval_modify = text_input("(00+25)", &horizontal_data.input_station_interval)
         .on_input(Message::StationIntervalModify);
-    let toggle_design_standard = button(text("A")).on_press(Message::DesignStandardToggle);
-    let toggle_sight = button(text(">")).on_press(Message::SightTypeToggle);
+    let toggle_design_standard = button(stext('A')).on_press(Message::DesignStandardToggle);
+    let toggle_sight = button(cycle_icon()).on_press(Message::SightTypeToggle);
     let design_speed =
         text_input("(65)", &horizontal_data.input_design_speed).on_input(Message::DesignSpeed);
     let m = text_input("(100)", &horizontal_data.input_m).on_input(Message::MModify);

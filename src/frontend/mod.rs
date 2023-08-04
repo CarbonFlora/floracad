@@ -1,8 +1,10 @@
 use anyhow::Result;
 use iced::alignment::{self};
+use iced::font::{self, Font};
 use iced::keyboard::{self, KeyCode, Modifiers};
 use iced::theme::Theme;
 use iced::widget::{button, column, container, row, scrollable, text_input};
+use iced::widget::{text, Text};
 use iced::window::{self, Mode};
 use iced::{event, Event};
 use iced::{subscription, Subscription};
@@ -30,6 +32,7 @@ pub enum CurveSolver {
 #[derive(Debug, Clone)]
 pub enum Message {
     // generic
+    FontLoaded(Result<(), font::Error>),
     FullScreenToggle(Mode),
     SwitchCurveType,
     SustainedDowngradeCheck(bool),
@@ -67,7 +70,12 @@ impl Application for CurveSolver {
     fn new(_flags: ()) -> (CurveSolver, Command<Message>) {
         (
             CurveSolver::Vertical(VerticalData::default()),
-            Command::none(),
+            Command::batch([
+                font::load(include_bytes!("../../fonts/Arrows.ttf").as_slice())
+                    .map(Message::FontLoaded),
+                font::load(include_bytes!("../../fonts/Byom-Icons-Trial.ttf").as_slice())
+                    .map(Message::FontLoaded),
+            ]),
         )
     }
 
@@ -227,8 +235,8 @@ impl Application for CurveSolver {
             CurveSolver::Vertical(vertical_data) => {
                 let title = vertical_header_group();
                 let body = row![
-                    vertical_input_group(vertical_data),
-                    vertical_output_group(vertical_data)
+                    vertical_data.vertical_input_group(),
+                    vertical_data.vertical_output_group()
                 ];
 
                 scrollable(
@@ -332,4 +340,59 @@ impl From<HorizontalStationDefinition> for VerticalDefinition {
             HorizontalStationDefinition::PT => VerticalDefinition::PVT,
         }
     }
+}
+
+// Generic Text
+fn stext(character: char) -> Text<'static> {
+    text(character.to_string())
+        .horizontal_alignment(alignment::Horizontal::Center)
+        .width(20)
+}
+
+// Fonts
+const ICONS: Font = Font::with_name("Arrows");
+const ICONS2: Font = Font::with_name("Byom Icons");
+
+fn icon(unicode: char) -> Text<'static> {
+    text(unicode.to_string())
+        .font(ICONS)
+        .horizontal_alignment(alignment::Horizontal::Center)
+        .width(20)
+}
+
+fn icon2(unicode: char) -> Text<'static> {
+    text(unicode.to_string())
+        .font(ICONS2)
+        .horizontal_alignment(alignment::Horizontal::Center)
+        .width(20)
+}
+
+fn cycle_icon() -> Text<'static> {
+    icon('\u{79}') //5a
+}
+
+fn up_arrow_icon() -> Text<'static> {
+    icon('\u{63}')
+}
+
+fn down_arrow_icon() -> Text<'static> {
+    icon('\u{64}')
+}
+
+fn exclam_icon() -> Text<'static> {
+    icon2('\u{21}')
+}
+
+fn good_check_icon() -> Text<'static> {
+    icon2('\u{56}')
+}
+
+fn right_carrot_icon() -> Text<'static> {
+    icon2('\u{51}')
+}
+
+const SUBTITLE_SIZE: u16 = 20;
+
+fn subtitle(str: &str) -> Text<'static> {
+    text(str).size(SUBTITLE_SIZE)
 }

@@ -3,7 +3,7 @@ use anyhow::{anyhow, Result};
 use crate::tables::get_min_sight;
 use crate::vertical::*;
 
-type ObstacleReturn = (bool, Option<ObstacleStation>, Option<Station>, f64);
+pub type ObstacleReturn = Result<(bool, ObstacleStation, Station, f64), Error>;
 
 #[derive(Debug, Clone, Copy)]
 pub struct VerticalStations {
@@ -200,45 +200,58 @@ impl VerticalCurve {
         design_standard: DesignStandard,
         sight_type: SightType,
         adjustment: f64,
-    ) -> Result<Option<(bool, f64)>> {
+    ) -> Result<(bool, f64)> {
         let min_sight = get_min_sight(self.dimensions.design_speed, design_standard, sight_type);
         match min_sight {
             Some(w) => {
                 let min_curve_length =
                     self.calc_min_curve_length(w * adjustment, design_standard, sight_type)?;
 
-                Ok(Some((
+                Ok((
                     (self.dimensions.curve_length >= min_curve_length),
                     min_curve_length,
-                )))
+                ))
             }
             None => Err(anyhow!("Design speed isn't specified in the manual.")),
         }
     }
 
-    pub fn within_obstacles(&self, obstacle_detail: &ObstacleDetail) -> Result<ObstacleReturn> {
-        for obstacle in &obstacle_detail.interval {
-            let curve_station = self.spot_station_with_station(obstacle.0)?;
-            let delta = (curve_station.elevation - obstacle.0.elevation).abs();
+    pub fn obstacle_compliant(&self, obstacle_detail: &ObstacleDetail) -> Vec<ObstacleReturn> {
+        let mut obstacle_return = Vec::new();
 
-            match obstacle.1 {
-                ObstacleType::Above => {
-                    if curve_station.elevation >= obstacle.0.elevation {
-                        return Ok((false, Some(*obstacle), Some(curve_station), delta));
-                    }
-                }
-                ObstacleType::Below => {
-                    if curve_station.elevation <= obstacle.0.elevation {
-                        return Ok((false, Some(*obstacle), Some(curve_station), delta));
-                    }
-                }
-            };
+        for obstacle in &obstacle_detail.interval {
+            obstacle_return.push(self.within_obstacle(obstacle));
         }
 
-        Ok((true, None, None, 0.))
+        obstacle_return
     }
 
-    fn spot_station_with_station(&self, station: Station) -> Result<Station> {
+    fn within_obstacle(&self, obstacle: &ObstacleStation) -> ObstacleReturn {
+        match self.spot_station_with_station(obstacle.0) {
+            Err(e) => Err(e),
+            Ok(curve_station) => {
+                let delta = (curve_station.elevation - obstacle.0.elevation).abs();
+                let mut within = false;
+
+                match obstacle.1 {
+                    ObstacleType::Above => {
+                        if curve_station.elevation <= obstacle.0.elevation {
+                            within = true;
+                        }
+                    }
+                    ObstacleType::Below => {
+                        if curve_station.elevation >= obstacle.0.elevation {
+                            within = true;
+                        }
+                    }
+                };
+
+                Ok((within, *obstacle, curve_station, delta))
+            }
+        }
+    }
+
+    fn spot_station_with_station(&self, station: Station) -> Result<Station, Error> {
         if station.value >= self.stations.pvc.value && station.value <= self.stations.pvt.value {
             let distance_delta = station.value - self.stations.pvc.value;
             let a = (self.dimensions.outgoing_grade - self.dimensions.incoming_grade)
@@ -252,6 +265,14 @@ impl VerticalCurve {
             });
         }
 
-        Err(anyhow!("{} is outside the curve.", station))
+        Err(Error::ParseStation { station })
     }
+}
+
+/// Vertical Calculate Errors.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Obstacle station is outside the curve.
+    #[error("{station} is outside the curve.")]
+    ParseStation { station: Station },
 }
