@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.72"
+chrono = "0.4.26"
 dms-coordinates = "1.1.0"
 eqsolver = "0.1.1"
 iced = { version = "0.10.0" }
