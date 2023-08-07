@@ -11,6 +11,7 @@ pub fn vertical_header_group<'a>() -> Column<'a, Message> {
         .style(Color::from([0.5, 0.5, 0.5]))
         .horizontal_alignment(alignment::Horizontal::Center);
     let switch = button("Switch to Horizontal Curve").on_press(Message::SwitchCurveType);
+    // let task_row = row![].align_items(iced::Alignment::Start);
     column![title, switch].spacing(10).width(Length::Fill)
 }
 

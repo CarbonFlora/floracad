@@ -2,6 +2,7 @@ use anyhow::Result;
 use std::f64::consts::PI;
 
 use crate::datatypes::*;
+use crate::export::*;
 
 pub mod calculate;
 pub mod display;
@@ -45,6 +46,8 @@ impl HorizontalBuildDefinition {
 
 #[derive(Debug, Clone, Default)]
 pub struct HorizontalData {
+    pub input_directory: String,
+    pub success_flags: [ExportSuccess; 3],
     pub input_station_method: HorizontalStationDefinition,
     pub input_build_method: HorizontalBuildDefinition,
     pub input_station: String,

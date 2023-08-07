@@ -27,7 +27,7 @@ lazy_static! {
     };
 }
 
-//CALTRANS HDM TABLE 201-1 & TABLE 201-7
+//CALTRANS HDM TABLE 201-1 & TABLE 201-7 (2020 7th ed.)
 lazy_static! {
     static ref HDM_SIGHT_TABLE: HashMap<i32, (f64, f64, f64)> = { //stopping, passing, decision
         let mut m = HashMap::new();
