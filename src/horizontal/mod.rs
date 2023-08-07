@@ -58,6 +58,8 @@ pub struct HorizontalData {
     pub input_m: String,
     pub input_design_standard: DesignStandard,
     pub sustained_downgrade: bool,
+    pub input_pin_station: String,
+    pub pin: CurveDetail,
 }
 
 impl HorizontalData {

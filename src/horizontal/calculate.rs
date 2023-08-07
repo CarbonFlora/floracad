@@ -1,11 +1,11 @@
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 
-use crate::datatypes::*;
+use crate::horizontal::*;
 use crate::tables::get_min_sight;
 
 #[derive(Debug, Clone, Copy)]
 pub struct HorizontalStations {
-    pub pc: Station, 
+    pub pc: Station,
     pub pi: Station,
     pub pt: Station,
 }
@@ -19,7 +19,7 @@ pub struct HorizontalDimensions {
     pub middle_ordinate: f64,
     pub external: f64,
     pub curve_length_100: Angle, // Da
-    pub curve_angle: Angle, 
+    pub curve_angle: Angle,
     pub design_speed: i32,
     pub sight_distance: f64,
 }
@@ -31,13 +31,27 @@ pub struct HorizontalCurve {
 }
 
 impl HorizontalCurve {
-    pub fn is_compliant(&self, design_standard: DesignStandard, sight_type: SightType, adjustment: f64) -> Result<Option<(bool, f64)>> {
+    pub fn is_compliant(
+        &self,
+        design_standard: DesignStandard,
+        sight_type: SightType,
+        adjustment: f64,
+    ) -> Result<(bool, f64), Error> {
         let min_sight = get_min_sight(self.dimensions.design_speed, design_standard, sight_type);
         match min_sight {
-            Some(w) => {
-                Ok(Some(((self.dimensions.sight_distance>=w*adjustment), w*adjustment)))
-            },
-            None => Err(anyhow!("Design speed isn't specified in the manual.")),
+            None => Err(Error::DesignSpeedLUTError),
+            Some(w) => Ok((
+                (self.dimensions.sight_distance >= w * adjustment),
+                w * adjustment,
+            )),
         }
     }
+}
+
+/// Horizontal Calculate Errors.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Design speed isn't specified in the manual.
+    #[error("Design speed isn't specified in the manual.")]
+    DesignSpeedLUTError,
 }

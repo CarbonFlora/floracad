@@ -110,6 +110,9 @@ impl VerticalData {
             .padding(10);
 
         match self.to_vertical_curve() {
+            Err(e) => {
+                column = column.push(row![exclam_icon(), text(format!(" {}", e))]);
+            }
             Ok(w) => {
                 column = column
                     .push(self.curve_details_block(&w))
@@ -118,9 +121,6 @@ impl VerticalData {
                     .push(self.validation_block(&w))
                     .push(self.obstacle_block(&w))
                     .push(self.interval_block(&w));
-            }
-            Err(e) => {
-                column = column.push(row![exclam_icon(), text(format!(" {}", e))]);
             }
         }
         column

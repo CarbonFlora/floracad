@@ -61,6 +61,9 @@ pub enum Message {
     CurveAngleModify(String),
     TangentModify(String),
     MModify(String),
+    // PinStation(String),
+    // AddPin,
+    // RemovePin,
 }
 
 impl Application for CurveSolver {
@@ -225,6 +228,18 @@ impl Application for CurveSolver {
                         horizontal_data.sustained_downgrade = raw_input;
                         Command::none()
                     }
+                    // Message::PinStation(raw_data) => {
+                    //     horizontal_data.input_pin_station = raw_data;
+                    //     Command::none()
+                    // }
+                    // Message::AddPin => {
+                    //     let _ = self.add_to_list();
+                    //     Command::none()
+                    // }
+                    // Message::RemovePin => {
+                    //     horizontal_data.pin.interval.pop();
+                    //     Command::none()
+                    // }
                     _ => Command::none(),
                 };
                 Command::batch(vec![generic, specific])
@@ -252,8 +267,8 @@ impl Application for CurveSolver {
             CurveSolver::Horizontal(horizontal_data) => {
                 let title = horizontal_header_group();
                 let body = row![
-                    horizontal_input_group(horizontal_data),
-                    horizontal_output_group(horizontal_data)
+                    horizontal_data.horizontal_input_group(),
+                    horizontal_data.horizontal_output_group()
                 ];
 
                 scrollable(
@@ -308,6 +323,7 @@ impl CurveSolver {
     }
 
     pub fn add_to_list(&mut self) -> Result<()> {
+        //this is a hack
         match self {
             CurveSolver::Vertical(vertical_data) => {
                 let value = coerce_station_value(&vertical_data.input_obstacle_station)?;
@@ -318,7 +334,14 @@ impl CurveSolver {
                     .interval
                     .push((station, vertical_data.input_obstacle_type));
             }
-            CurveSolver::Horizontal(horizontal_data) => {}
+            CurveSolver::Horizontal(horizontal_data) => {
+                let value = coerce_station_value(&horizontal_data.input_pin_station)?;
+
+                horizontal_data.pin.interval.push(Station {
+                    value,
+                    elevation: 0.0,
+                });
+            }
         }
         Ok(())
     }

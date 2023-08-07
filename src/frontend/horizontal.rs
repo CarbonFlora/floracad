@@ -1,6 +1,6 @@
-use iced::widget::{checkbox, column, text, Column};
+use iced::widget::{checkbox, column, text, Column, Row};
 
-use crate::frontend::*;
+use crate::{frontend::*, horizontal::calculate::HorizontalCurve};
 
 pub fn horizontal_header_group<'a>() -> Column<'a, Message> {
     let title = text("Horizontal Curves (Pre-Release)")
@@ -12,145 +12,174 @@ pub fn horizontal_header_group<'a>() -> Column<'a, Message> {
     column![title, switch].spacing(10).width(Length::Fill)
 }
 
-pub fn horizontal_input_group(horizontal_data: &HorizontalData) -> Column<Message> {
-    let h_s = 5;
+impl HorizontalData {
+    pub fn horizontal_input_group(&self) -> Column<Message> {
+        let mut column = column![]
+            .spacing(10)
+            .width(Length::FillPortion(2))
+            .padding(10);
 
-    let toggle_station = button(stext('S')).on_press(Message::StationMethodToggle);
-    let station_modify =
-        text_input("(12+34)", &horizontal_data.input_station).on_input(Message::StationModify);
-    let toggle_build = button(cycle_icon()).on_press(Message::BuildMethodToggle);
-    let radius_modify =
-        text_input("(100)", &horizontal_data.input_radius).on_input(Message::RadiusModify);
-    let curve_angle_modify = text_input("(60d13\'42\")", &horizontal_data.input_curve_angle)
-        .on_input(Message::CurveAngleModify);
-    let tangent_modify =
-        text_input("(123)", &horizontal_data.input_tangent).on_input(Message::TangentModify);
-    let interval_modify = text_input("(00+25)", &horizontal_data.input_station_interval)
-        .on_input(Message::StationIntervalModify);
-    let toggle_design_standard = button(stext('A')).on_press(Message::DesignStandardToggle);
-    let toggle_sight = button(cycle_icon()).on_press(Message::SightTypeToggle);
-    let design_speed =
-        text_input("(65)", &horizontal_data.input_design_speed).on_input(Message::DesignSpeed);
-    let m = text_input("(100)", &horizontal_data.input_m).on_input(Message::MModify);
-    let sustained_downgrade = checkbox(
-        "Sustained Downgrade",
-        horizontal_data.sustained_downgrade,
-        Message::SustainedDowngradeCheck,
-    );
+        column = column
+            .push(self.mandatory_block())
+            .push(self.optional_block());
 
-    let row_1 = row![
-        text(format!("{:?} Station:", &horizontal_data.input_station_method).as_str()),
-        station_modify,
-        toggle_station,
-        toggle_build
-    ]
-    .spacing(h_s);
-    let mut row_stack_2 = column![].spacing(h_s);
-    match horizontal_data.input_build_method {
-        HorizontalBuildDefinition::RadiusCurveAngle => {
-            row_stack_2 = row_stack_2.push(row![text("Radius:"), radius_modify].spacing(h_s));
-            row_stack_2 =
-                row_stack_2.push(row![text("Curve Angle:"), curve_angle_modify].spacing(h_s));
-        }
-        HorizontalBuildDefinition::RadiusTangent => {
-            row_stack_2 = row_stack_2.push(row![text("Radius:"), radius_modify].spacing(h_s));
-            row_stack_2 = row_stack_2.push(row![text("Tangent:"), tangent_modify].spacing(h_s));
-        } // _ => (),
+        column
     }
 
-    let row_6 = row![text("Interval:"), interval_modify].spacing(h_s);
-    let row_7 = row![
-        text("Design Speed:"),
-        design_speed,
-        toggle_design_standard,
-        toggle_sight
-    ]
-    .spacing(h_s);
-    let row_8 = row![text("Clear Distance from C/L:"), m].spacing(h_s);
-    let row_9 = row![sustained_downgrade].spacing(h_s);
+    fn mandatory_block(&self) -> Column<'_, Message> {
+        column![
+            subtitle("Inputs"),
+            row![
+                text(format!("{:?} STA:", &self.input_station_method)),
+                text_input("Station (12+34)", &self.input_station).on_input(Message::StationModify),
+                button(stext('S')).on_press(Message::StationMethodToggle),
+                button(cycle_icon()).on_press(Message::BuildMethodToggle),
+            ]
+            .spacing(H_S),
+            match self.input_build_method {
+                HorizontalBuildDefinition::RadiusCurveAngle => self.row_radius_curve_angle(),
+                HorizontalBuildDefinition::RadiusTangent => self.row_radius_tangent(),
+            }
+            .spacing(H_S),
+        ]
+        .spacing(H_S)
+    }
 
-    column![row_1, row_stack_2, row_6, row_7, row_8, row_9]
-        .spacing(10)
-        .width(Length::FillPortion(2))
-        .padding(10)
-}
+    fn row_radius_curve_angle(&self) -> Row<'_, Message> {
+        row![
+            text("Radius:"),
+            text_input("(100)", &self.input_radius).on_input(Message::RadiusModify),
+            text("Curve Angle:"),
+            text_input("(60d13\'42\")", &self.input_curve_angle)
+                .on_input(Message::CurveAngleModify)
+        ]
+    }
 
-pub fn horizontal_output_group(horizontal_data: &HorizontalData) -> Column<Message> {
-    let h_s = 5;
-    let mut column = column![]
-        .spacing(10)
-        .width(Length::FillPortion(2))
-        .padding(10);
+    fn row_radius_tangent(&self) -> Row<'_, Message> {
+        row![
+            text("Radius:"),
+            text_input("(100)", &self.input_radius).on_input(Message::RadiusModify),
+            text("Tangent:"),
+            text_input("(123)", &self.input_tangent).on_input(Message::TangentModify)
+        ]
+    }
 
-    match horizontal_data.to_horizontal_curve() {
-        Ok(w) => {
-            let horizontal_curve = text(format!("{}", w));
-            column = column.push(horizontal_curve);
+    fn optional_block(&self) -> Column<'_, Message> {
+        column![
+            subtitle("Additional Details"),
+            row![
+                text("Interval:"),
+                text_input("(00+25)", &self.input_station_interval)
+                    .on_input(Message::StationIntervalModify),
+            ]
+            .spacing(H_S),
+            row![
+                text("Design Speed:"),
+                text_input("(65)", &self.input_design_speed).on_input(Message::DesignSpeed),
+                text("Clear Distance:"),
+                text_input("(234)", &self.input_m).on_input(Message::MModify),
+                button(stext('A')).on_press(Message::DesignStandardToggle),
+                button(cycle_icon()).on_press(Message::SightTypeToggle),
+            ]
+            .spacing(H_S),
+            checkbox(
+                "Sustained Downgrade",
+                self.sustained_downgrade,
+                Message::SustainedDowngradeCheck,
+            )
+            .spacing(H_S),
+        ]
+        .spacing(H_S)
+    }
 
+    pub fn horizontal_output_group(&self) -> Column<Message> {
+        let h_s = 5;
+        let mut column = column![]
+            .spacing(10)
+            .width(Length::FillPortion(2))
+            .padding(10);
+
+        match self.to_horizontal_curve() {
+            Err(e) => {
+                column = column.push(row![exclam_icon(), text(format!(" {}", e))]);
+            }
+            Ok(w) => {
+                column = column
+                    .push(self.curve_details_block(&w))
+                    .push(self.major_stations_block(&w))
+                    .push(self.validation_block(&w))
+                    .push(self.interval_block(&w));
+            }
+        }
+        column
+    }
+
+    fn curve_details_block(&self, w: &HorizontalCurve) -> Column<'_, Message> {
+        column![subtitle("Curve Details"), text(format!("{}", w.dimensions)),]
+    }
+
+    fn major_stations_block(&self, w: &HorizontalCurve) -> Column<'_, Message> {
+        column![subtitle("Major Stations"), text(format!("{}", w.stations)),]
+    }
+
+    fn validation_block(&self, w: &HorizontalCurve) -> Column<'_, Message> {
+        let mut validation_column = column![subtitle(&format!(
+            "Sight Distance ( {:?} - {:?} )",
+            self.input_design_standard, self.input_sight_type
+        ))];
+        if self.input_design_speed.is_empty() || self.input_m.is_empty() {
+            validation_column = validation_column.push(row![
+                notification_icon(),
+                text(" No speed or clear distance given.")
+            ]);
+        } else {
             match w.is_compliant(
-                horizontal_data.input_design_standard,
-                horizontal_data.input_sight_type,
-                calc_adjustment(horizontal_data.sustained_downgrade),
+                self.input_design_standard,
+                self.input_sight_type,
+                calc_adjustment(self.sustained_downgrade),
             ) {
-                Ok(j) => match j {
-                    Some(h) => match h.0 {
-                        true => {
-                            column = column.push(text(format!(
-                                "~ Sight Distance ( {:?} - {:?} )\nCompliant as {:.2} >= {:.2}",
-                                horizontal_data.input_design_standard,
-                                horizontal_data.input_sight_type,
-                                w.dimensions.sight_distance,
-                                h.1
-                            )))
-                        }
-                        false => {
-                            column = column.push(text(format!(
-                                "~ Sight Distance ( {:?} - {:?} )\nNoncompliant! as {:.2} < {:.2}",
-                                horizontal_data.input_design_standard,
-                                horizontal_data.input_sight_type,
-                                w.dimensions.sight_distance,
-                                h.1
-                            )))
-                        }
-                    },
-                    None => {
-                        column = column.push(text(format!(
-                            "~ Sight Distance ( {:?} - {:?} )\n{:?}",
-                            horizontal_data.input_design_standard,
-                            horizontal_data.input_sight_type,
-                            horizontal_data.input_design_standard
-                        )))
-                    }
-                },
                 Err(e) => {
-                    column = column.push(text(format!(
-                        "~ Sight Distance ( {:?} - {:?} )\n{:?}",
-                        horizontal_data.input_design_standard, horizontal_data.input_sight_type, e
-                    )))
+                    validation_column =
+                        validation_column.push(row![exclam_icon(), text(format!(" {}", e))]);
+                }
+                Ok(j) => {
+                    if j.0 {
+                        validation_column = validation_column.push(row![
+                            good_check_icon(),
+                            text(format!(" {:.2} > {:.2}", w.dimensions.sight_distance, j.1))
+                        ]);
+                    } else {
+                        validation_column = validation_column.push(row![
+                            exclam_icon(),
+                            text(format!(" {:.2} < {:.2}", w.dimensions.sight_distance, j.1))
+                        ]);
+                    }
                 }
             }
-
-            // column = column.push(text(format!("~ Extreme\n{}", w.get_extreme())));
-
-            if horizontal_data.input_station_interval.is_empty() {
-                column = column.push(text("~ Interval Stations\nEnter an Interval."));
-            } else {
-                match coerce_station_value(&horizontal_data.input_station_interval) {
-                    Ok(t) => {
-                        column = column.push(text(format!(
-                            "~ Interval Stations\n{}",
-                            w.interval_stations(t)
-                        )));
-                    }
-                    Err(e) => {
-                        column = column.push(text(format!("~ Interval Stations\n{}", e)));
-                    }
-                };
-            }
         }
-        Err(e) => {
-            column = column.push(text(format!("{:?}", e)));
-        }
+
+        validation_column
     }
-    column
+
+    fn interval_block(&self, w: &HorizontalCurve) -> Column<'_, Message> {
+        let mut interval_column = column![subtitle("Interval Stations")];
+
+        if self.input_station_interval.is_empty() {
+            interval_column =
+                interval_column.push(row![notification_icon(), text(" No interval given.")]);
+        } else {
+            match coerce_station_value(&self.input_station_interval) {
+                Err(e) => {
+                    interval_column =
+                        interval_column.push(row![exclam_icon(), text(format!(" {}", e))]);
+                }
+                Ok(t) => {
+                    interval_column =
+                        interval_column.push(text(format!("{}", w.interval_stations(t))));
+                }
+            };
+        }
+
+        interval_column
+    }
 }
