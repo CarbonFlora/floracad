@@ -318,8 +318,8 @@ impl Application for CurveSolver {
 impl CurveSolver {
     fn task_row(&self) -> Column<'_, Message> {
         let title = match self {
-            CurveSolver::Horizontal(_) => "Horizontal Curves (Pre-Release)",
-            CurveSolver::Vertical(_) => "Vertical Curves (Pre-Release)",
+            CurveSolver::Horizontal(_) => "Horizontal Curves",
+            CurveSolver::Vertical(_) => "Vertical Curves",
         };
         let file = match self {
             CurveSolver::Horizontal(data) => &data.input_directory,
@@ -339,15 +339,6 @@ impl CurveSolver {
                 .on_input(Message::Directory)
                 .width(Length::Fill),
             self.display_export(),
-            // button(self.display_export_txt())
-            //     .on_press(Message::ExportText)
-            //     .width(42),
-            // button(text(".pdf").horizontal_alignment(alignment::Horizontal::Center))
-            //     .on_press(Message::ExportPDF)
-            //     .width(42),
-            // button(text(".xlsx").horizontal_alignment(alignment::Horizontal::Center))
-            //     .on_press(Message::ExportXLSX)
-            //     .width(42)
         ]
         .width(Length::Fill)
         .spacing(H_S);
