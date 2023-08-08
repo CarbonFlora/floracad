@@ -110,7 +110,7 @@ impl Application for CurveSolver {
                     Message::FileDialog => {
                         vertical_data.input_directory = save_to();
                     }
-                    // Message::Directory(raw_data) => {
+                    // Message::Directory(raw_data) => { // Do not edit input directly, will crash native_dialog.
                     //     vertical_data.input_directory = raw_data;
                     // }
                     Message::InputMethodToggle => {
