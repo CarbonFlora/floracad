@@ -110,9 +110,9 @@ impl Application for CurveSolver {
                     Message::FileDialog => {
                         vertical_data.input_directory = save_to();
                     }
-                    Message::Directory(raw_data) => {
-                        vertical_data.input_directory = raw_data;
-                    }
+                    // Message::Directory(raw_data) => {
+                    //     vertical_data.input_directory = raw_data;
+                    // }
                     Message::InputMethodToggle => {
                         vertical_data.input_method = vertical_data.input_method.next();
                     }
@@ -188,9 +188,9 @@ impl Application for CurveSolver {
                     Message::FileDialog => {
                         horizontal_data.input_directory = save_to();
                     }
-                    Message::Directory(raw_data) => {
-                        horizontal_data.input_directory = raw_data;
-                    }
+                    // Message::Directory(raw_data) => {
+                    //     horizontal_data.input_directory = raw_data;
+                    // }
                     Message::BuildMethodToggle => {
                         horizontal_data.input_build_method =
                             horizontal_data.input_build_method.next();
