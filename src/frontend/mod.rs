@@ -42,7 +42,6 @@ pub enum Message {
     Directory(String),
     ExportText,
     ExportPDF,
-    ExportXLSX,
     // Vertical
     InputMethodToggle,
     StationModify(String),
@@ -105,7 +104,7 @@ impl Application for CurveSolver {
 
         match self {
             CurveSolver::Vertical(vertical_data) => {
-                vertical_data.success_flags = [ExportSuccess::None; 3];
+                vertical_data.success_flags = [ExportSuccess::None; 2];
 
                 match message {
                     Message::FileDialog => {
@@ -172,16 +171,12 @@ impl Application for CurveSolver {
                         Ok(w) => vertical_data.success_flags[1] = ExportSuccess::Success,
                         Err(e) => vertical_data.success_flags[1] = ExportSuccess::Failure,
                     },
-                    Message::ExportXLSX => match vertical_data.export_xlsx() {
-                        Ok(w) => vertical_data.success_flags[2] = ExportSuccess::Success,
-                        Err(e) => vertical_data.success_flags[2] = ExportSuccess::Failure,
-                    },
                     _ => (),
                 };
                 Command::batch(vec![generic])
             }
             CurveSolver::Horizontal(horizontal_data) => {
-                horizontal_data.success_flags = [ExportSuccess::None; 3];
+                horizontal_data.success_flags = [ExportSuccess::None; 2];
 
                 match message {
                     Message::FileDialog => {
@@ -239,10 +234,6 @@ impl Application for CurveSolver {
                     Message::ExportPDF => match horizontal_data.export_pdf() {
                         Ok(w) => horizontal_data.success_flags[1] = ExportSuccess::Success,
                         Err(e) => horizontal_data.success_flags[1] = ExportSuccess::Failure,
-                    },
-                    Message::ExportXLSX => match horizontal_data.export_xlsx() {
-                        Ok(w) => horizontal_data.success_flags[2] = ExportSuccess::Success,
-                        Err(e) => horizontal_data.success_flags[2] = ExportSuccess::Failure,
                     },
                     // Message::PinStation(raw_data) => {
                     //     horizontal_data.input_pin_station = raw_data;
@@ -360,9 +351,9 @@ impl CurveSolver {
     }
 
     fn display_export(&self) -> Row<'_, Message> {
-        let mut export_row = row![];
-        let labels = [".txt", ".pdf", ".xlsx"];
-        let msg = [Message::ExportText, Message::ExportPDF, Message::ExportXLSX];
+        let mut export_row = row![].spacing(H_S);
+        let labels = [".txt", ".pdf"];
+        let msg = [Message::ExportText, Message::ExportPDF];
         let binding = match self {
             Self::Horizontal(data) => data.success_flags,
             Self::Vertical(data) => data.success_flags,

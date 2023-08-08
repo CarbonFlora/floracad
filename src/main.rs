@@ -1,4 +1,4 @@
-use iced::{Settings, Application};
+use iced::{Application, Settings};
 
 use floracad::frontend::CurveSolver;
 
