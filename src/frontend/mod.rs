@@ -165,11 +165,17 @@ impl Application for CurveSolver {
                     }
                     Message::ExportText => match vertical_data.export_txt() {
                         Ok(w) => vertical_data.success_flags[0] = ExportSuccess::Success,
-                        Err(e) => vertical_data.success_flags[0] = ExportSuccess::Failure,
+                        Err(e) => {
+                            vertical_data.input_directory = format!("{:?}", e);
+                            vertical_data.success_flags[0] = ExportSuccess::Failure;
+                        }
                     },
                     Message::ExportPDF => match vertical_data.export_pdf() {
                         Ok(w) => vertical_data.success_flags[1] = ExportSuccess::Success,
-                        Err(e) => vertical_data.success_flags[1] = ExportSuccess::Failure,
+                        Err(e) => {
+                            vertical_data.input_directory = format!("{:?}", e);
+                            vertical_data.success_flags[1] = ExportSuccess::Failure;
+                        }
                     },
                     _ => (),
                 };

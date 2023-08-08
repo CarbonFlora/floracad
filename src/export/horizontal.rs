@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::prelude::*;
 
 use crate::datatypes::*;
+use crate::export::liberation_sans;
 use crate::horizontal::HorizontalData;
 
 impl HorizontalData {
@@ -83,7 +84,7 @@ impl HorizontalData {
 
     fn to_pdf(&self) -> Result<Document> {
         let binding = self.to_txt()?;
-        let font_family = genpdf::fonts::from_files("./fonts", "LiberationSans", None)?;
+        let font_family = liberation_sans()?;
         let mut doc = genpdf::Document::new(font_family);
         let mut decorator = genpdf::SimplePageDecorator::new();
         decorator.set_margins(10);
