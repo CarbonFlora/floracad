@@ -9,6 +9,34 @@ use crate::horizontal::HorizontalData;
 impl HorizontalData {
     pub fn export_txt(&self) -> Result<()> {
         let mut file = File::create(self.input_directory.clone() + ".txt")?;
+
+        write!(file, "{}", self.quick_parse()?)?;
+        Ok(())
+    }
+
+    pub fn export_pdf(&self) -> Result<()> {
+        let font_family = genpdf::fonts::from_files("./fonts", "LiberationSans", None)?;
+        let mut doc = genpdf::Document::new(font_family);
+        let mut decorator = genpdf::SimplePageDecorator::new();
+
+        doc.set_title("Horizontal Curve");
+        decorator.set_margins(10);
+        doc.set_page_decorator(decorator);
+        doc.set_minimal_conformance();
+        doc.set_line_spacing(1.25);
+
+        doc.push(genpdf::elements::Paragraph::new(self.quick_parse()?));
+
+        doc.render_to_file(self.input_directory.clone() + ".pdf")?;
+
+        Ok(())
+    }
+
+    pub fn export_xlsx(&self) -> Result<()> {
+        Err(anyhow!("temp failure."))
+    }
+
+    fn quick_parse(&self) -> Result<String> {
         let mut buf = String::new();
         let curve = self.to_horizontal_curve()?;
         buf += format!("\nCurve Details\n--\n{}", curve.dimensions).as_str();
@@ -55,15 +83,6 @@ impl HorizontalData {
         buf += format!("\nDate of Production: {}", Local::now()).as_str();
         buf += format!("\n\nSource Data\n--\n{:?}", self).as_str();
 
-        write!(file, "{}", buf)?;
-        Ok(())
-    }
-
-    pub fn export_pdf(&self) -> Result<()> {
-        Ok(())
-    }
-
-    pub fn export_xlsx(&self) -> Result<()> {
-        Err(anyhow!("temp failure."))
+        Ok(buf)
     }
 }

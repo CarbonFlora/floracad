@@ -1,6 +1,6 @@
 [package]
 name = "floracad"
-version = "0.4.4"
+version = "0.4.5"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,6 +10,7 @@ anyhow = "1.0.72"
 chrono = "0.4.26"
 dms-coordinates = "1.1.0"
 eqsolver = "0.1.1"
+genpdf = "0.2.0"
 iced = { version = "0.10.0" }
 lazy_static = "1.4.0"
 native-dialog = { version = "0.6.4", features = ["windows_dpi_awareness", "windows_visual_styles"] }
