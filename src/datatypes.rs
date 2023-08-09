@@ -17,7 +17,7 @@ impl fmt::Display for Station {
             f,
             "STA: {:.0}+{:.2}, ELEV: {:.2}",
             (self.value / 100.0).trunc(),
-            self.value - (self.value / 100.0).trunc() * 100.0,
+            (self.value - (self.value / 100.0).trunc() * 100.0).abs(),
             self.elevation
         )?;
         Ok(())
