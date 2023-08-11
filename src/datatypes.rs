@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 use std::fmt;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 use crate::vertical::ObstacleType;
 
@@ -75,47 +75,37 @@ impl fmt::Display for Angle {
 
 impl Angle {
     pub fn from(raw_data: &str) -> Result<Self> {
-        if !raw_data.is_empty() {
-            if raw_data.chars().any(|c| matches!(c, 'd' | '\'' | '\"')) {
-                let parts = raw_data
-                    .trim()
-                    .split_terminator(['d', '\'', '\"'])
-                    .collect::<Vec<&str>>();
-                let mut parts_iter = parts.iter();
-                let mut decimal_degrees = 0.0;
-                if raw_data.contains('d') {
-                    decimal_degrees += parts_iter.next().unwrap_or(&"0.0").parse::<f64>()?;
-                }
-                if raw_data.contains('\'') {
-                    decimal_degrees += parts_iter.next().unwrap_or(&"0.0").parse::<f64>()? / 60.0;
-                }
-                if raw_data.contains('\"') {
-                    decimal_degrees += parts_iter.next().unwrap_or(&"0.0").parse::<f64>()? / 3600.0;
-                }
+        if raw_data.is_empty() {
+            return Err(anyhow!("Angle is required."));
+        }
+        let mut decimal_degrees = 0.;
 
-                if decimal_degrees >= 180. {
-                    return Err(Error::OversizedAngle.into());
-                }
+        if raw_data.chars().any(|c| matches!(c, 'd' | '\'' | '\"')) {
+            let mut parts = raw_data.trim().split_terminator(['d', '\'', '\"']);
 
-                return Ok(Angle {
-                    radians: decimal_degrees * PI / 180.0,
-                    decimal_degrees,
-                });
-            } else if raw_data.chars().all(|c| matches!(c, '0'..='9' | '.')) {
-                let decimal_degrees = raw_data.trim().parse::<f64>()?;
-
-                if decimal_degrees >= 180. {
-                    return Err(Error::OversizedAngle.into());
-                }
-
-                return Ok(Angle {
-                    radians: decimal_degrees * PI / 180.0,
-                    decimal_degrees,
-                });
+            if raw_data.contains('d') {
+                decimal_degrees += parts.next().unwrap_or("0.0").parse::<f64>()?;
             }
+            if raw_data.contains('\'') {
+                decimal_degrees += parts.next().unwrap_or("0.0").parse::<f64>()? / 60.0;
+            }
+            if raw_data.contains('\"') {
+                decimal_degrees += parts.next().unwrap_or("0.0").parse::<f64>()? / 3600.0;
+            }
+        } else if raw_data.chars().all(|c| matches!(c, '0'..='9' | '.')) {
+            decimal_degrees = raw_data.trim().parse::<f64>()?;
+        } else {
+            return Err(Error::ParseAngle.into());
         }
 
-        Err(Error::ParseAngle.into())
+        if decimal_degrees >= 180. {
+            return Err(Error::OversizedAngle.into());
+        }
+
+        Ok(Angle {
+            radians: decimal_degrees * PI / 180.0,
+            decimal_degrees,
+        })
     }
 
     pub fn to_dms(&self) -> String {
@@ -162,87 +152,66 @@ impl DesignStandard {
 }
 
 pub fn coerce_station_value(string: &str) -> Result<f64, Error> {
-    let mut station_vec = vec![];
-    for slice in string.split_terminator('+') {
-        station_vec.push(
-            slice
-                .trim()
-                .parse::<f64>()
-                .map_err(|x| Error::ParseNonFloat)?,
-        );
-    }
-    match station_vec.len() {
-        0 => return Err(Error::NoValue),
-        1 => return Err(Error::NoPlus),
-        3.. => return Err(Error::ExcessiveValues),
-        _ => (),
-    };
-    if station_vec[1].is_sign_negative() {
+    let mut binding = string
+        .split_terminator('+')
+        .filter_map(|x| x.trim().parse::<f64>().ok());
+    let first = binding.next().ok_or(Error::NoValue)?;
+    let second = binding.next().ok_or(Error::NoPlus)?;
+
+    if second.is_sign_negative() {
         return Err(Error::DifferentSign);
+    } else if binding.count() > 0 {
+        return Err(Error::ExcessiveValues);
     }
 
-    Ok(station_vec[0] * 100.0 + station_vec[1] * station_vec[0].signum())
+    Ok(first * 100.0 + second * first.signum())
 }
 
 pub fn coerce_elevation(string: &str) -> Result<f64, Error> {
     if string.is_empty() {
-        Err(Error::NoElevValue)
-    } else {
-        let slice = string
-            .trim()
-            .parse::<f64>()
-            .map_err(|x| Error::ParseElevation)?;
-
-        Ok(slice)
+        return Err(Error::NoElevValue);
     }
+    string
+        .trim()
+        .parse::<f64>()
+        .map_err(|x| Error::ParseElevation)
 }
 
 pub fn coerce_length(string: &str) -> Result<f64, Error> {
     if string.is_empty() {
-        Err(Error::NoLenValue)
-    } else {
-        let slice = string
-            .trim()
-            .parse::<f64>()
-            .map_err(|x| Error::ParseLength)?;
-
-        Ok(slice)
+        return Err(Error::NoLenValue);
     }
+    string.trim().parse::<f64>().map_err(|x| Error::ParseLength)
 }
 
 pub fn coerce_speed(string: &str) -> Result<i32, Error> {
-    let slice = string
-        .trim()
-        .parse::<i32>()
-        .map_err(|x| Error::ParseSpeed)?;
-
-    Ok(slice)
+    string.trim().parse::<i32>().map_err(|x| Error::ParseSpeed)
 }
 
 pub fn coerce_grade(string: &str) -> Result<f64, Error> {
     if string.is_empty() {
-        Err(Error::NoGradeValue)
-    } else {
-        let mut grade = string
-            .trim()
-            .trim_end_matches('%')
-            .parse::<f64>()
-            .map_err(|x| Error::ParseGrade)?;
-
-        if string.trim().ends_with('%') {
-            grade /= 100.0;
-        }
-
-        Ok(grade)
+        return Err(Error::NoGradeValue);
     }
+
+    string
+        .trim()
+        .trim_end_matches('%')
+        .parse::<f64>()
+        .map(|w| {
+            if string.trim().ends_with('%') {
+                w / 100.0
+            } else {
+                w
+            }
+        })
+        .map_err(|x| Error::ParseGrade)
 }
 
 pub fn calc_adjustment(bools: bool) -> f64 {
-    let mut adjustment = 1.;
     if bools {
-        adjustment += 0.2;
+        return 1.2;
     }
-    adjustment
+    1.
 }
 
 /// Parsing errors.
@@ -290,8 +259,8 @@ pub enum Error {
     /// Angle is misconfigured with unexpected symbol.
     #[error("Angle is misconfigured with unexpected symbol.")]
     ParseAngle,
-    /// Angle is too large.
-    #[error("Angle is too large.")]
+    /// Angles over 180 degrees are currently not supported
+    #[error("Angles over 180 degrees are currently not supported.")]
     OversizedAngle,
 }
 
