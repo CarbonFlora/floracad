@@ -335,7 +335,7 @@ impl CurveSolver {
             button("Switch Curve Type").on_press(Message::SwitchCurveType),
             // Space::with_width(Length::Fill),
             button(exit_icon()).on_press(Message::FileDialog),
-            text(format!("{}", file)).width(Length::Fill),
+            text(file).width(Length::Fill),
             self.display_export(),
         ]
         .width(Length::Fill)
