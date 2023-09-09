@@ -37,24 +37,35 @@ impl VerticalCurve {
     ) -> Result<f64> {
         let curve_length = self.dimensions.curve_length;
         let grade_break = self.dimensions.outgoing_grade - self.dimensions.incoming_grade;
+        let design_speed = self.dimensions.design_speed;
         let a = grade_break.abs() * 100.0;
         if grade_break == 0.0 {
             // --
             return Ok(0.0);
         }
-
+        let mut min_sight_adjusted = min_sight.clone();
+        if a >= 2. && design_speed >= 40 && min_sight_adjusted < 10. * design_speed as f64 {
+            min_sight_adjusted = 10. * design_speed as f64;
+            println!("large min used.");
+        }
+        if a < 2. && design_speed < 40 && min_sight_adjusted < 200.0 {
+            min_sight_adjusted = 200.;
+            println!("small min used.");
+        }
         match design_standard {
             DesignStandard::AASHTO => {
                 match sight_type {
                     SightType::Stopping => {
                         if grade_break.is_sign_positive() {
                             // \/
-                            let l = a * min_sight.powi(2) / (400.0 + 3.5 * min_sight);
-                            if l >= min_sight {
+                            let l =
+                                a * min_sight_adjusted.powi(2) / (400.0 + 3.5 * min_sight_adjusted);
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - (400.0 + 3.5 * min_sight) / a;
-                            if min_sight > l {
+                            let l =
+                                2.0 * min_sight_adjusted - (400.0 + 3.5 * min_sight_adjusted) / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
@@ -64,12 +75,12 @@ impl VerticalCurve {
                             )))
                         } else {
                             // /\
-                            let l = a * min_sight.powi(2) / 2158.0;
-                            if l >= min_sight {
+                            let l = a * min_sight_adjusted.powi(2) / 2158.0;
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - 2158.0 / a;
-                            if min_sight > l {
+                            let l = 2.0 * min_sight_adjusted - 2158.0 / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
@@ -82,12 +93,14 @@ impl VerticalCurve {
                     SightType::Passing => {
                         if grade_break.is_sign_positive() {
                             // \/
-                            let l = a * min_sight.powi(2) / (400.0 + 3.5 * min_sight);
-                            if l >= min_sight {
+                            let l =
+                                a * min_sight_adjusted.powi(2) / (400.0 + 3.5 * min_sight_adjusted);
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - (400.0 + 3.5 * min_sight) / a;
-                            if min_sight > l {
+                            let l =
+                                2.0 * min_sight_adjusted - (400.0 + 3.5 * min_sight_adjusted) / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
@@ -97,12 +110,12 @@ impl VerticalCurve {
                             )))
                         } else {
                             // /\
-                            let l = a * min_sight.powi(2) / 2800.0;
-                            if l >= min_sight {
+                            let l = a * min_sight_adjusted.powi(2) / 2800.0;
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - 2800.0 / a;
-                            if min_sight > l {
+                            let l = 2.0 * min_sight_adjusted - 2800.0 / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
@@ -123,12 +136,14 @@ impl VerticalCurve {
                     SightType::Stopping => {
                         if grade_break.is_sign_positive() {
                             // \/
-                            let l = a * min_sight.powi(2) / (400.0 + 3.5 * min_sight);
-                            if l >= min_sight {
+                            let l =
+                                a * min_sight_adjusted.powi(2) / (400.0 + 3.5 * min_sight_adjusted);
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - (400.0 + 3.5 * min_sight) / a;
-                            if min_sight > l {
+                            let l =
+                                2.0 * min_sight_adjusted - (400.0 + 3.5 * min_sight_adjusted) / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
@@ -138,12 +153,12 @@ impl VerticalCurve {
                             )))
                         } else {
                             // /\
-                            let l = a * min_sight.powi(2) / 1329.0;
-                            if l >= min_sight {
+                            let l = a * min_sight_adjusted.powi(2) / 1329.0;
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - 1329.0 / a;
-                            if min_sight > l {
+                            let l = 2.0 * min_sight_adjusted - 1329.0 / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
@@ -156,12 +171,14 @@ impl VerticalCurve {
                     SightType::Decision => {
                         if grade_break.is_sign_positive() {
                             // \/
-                            let l = a * min_sight.powi(2) / (400.0 + 3.5 * min_sight);
-                            if l >= min_sight {
+                            let l =
+                                a * min_sight_adjusted.powi(2) / (400.0 + 3.5 * min_sight_adjusted);
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - (400.0 + 3.5 * min_sight) / a;
-                            if min_sight > l {
+                            let l =
+                                2.0 * min_sight_adjusted - (400.0 + 3.5 * min_sight_adjusted) / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
@@ -171,12 +188,12 @@ impl VerticalCurve {
                             )))
                         } else {
                             // /\
-                            let l = a * min_sight.powi(2) / 1329.0;
-                            if l >= min_sight {
+                            let l = a * min_sight_adjusted.powi(2) / 1329.0;
+                            if l >= min_sight_adjusted {
                                 return Ok(l);
                             }
-                            let l = 2.0 * min_sight - 1329.0 / a;
-                            if min_sight > l {
+                            let l = 2.0 * min_sight_adjusted - 1329.0 / a;
+                            if min_sight_adjusted > l {
                                 return Ok(l);
                             }
 
