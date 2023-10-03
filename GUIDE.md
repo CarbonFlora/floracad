@@ -1,5 +1,5 @@
 ### GUIDE
-Launch the executable.
+Download and launch the executable.
 
 #### Header
 - The "Switch Curve Type" button switches the application between creating vertical curves and horizontal curves. 
