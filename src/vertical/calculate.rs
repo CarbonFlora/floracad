@@ -247,7 +247,8 @@ impl VerticalCurve {
         match self.spot_station_with_station(obstacle.0) {
             Err(e) => Err(e),
             Ok(curve_station) => {
-                let delta = (curve_station.elevation - obstacle.0.elevation).abs();
+                let delta =
+                    (curve_station.elevation.unwrap() - obstacle.0.elevation.unwrap()).abs();
                 let mut within = false;
 
                 match obstacle.1 {
@@ -273,12 +274,13 @@ impl VerticalCurve {
             let distance_delta = station.value - self.stations.pvc.value;
             let a = (self.dimensions.outgoing_grade - self.dimensions.incoming_grade)
                 / (2.0 * self.dimensions.curve_length);
-            let elevation = self.stations.pvc.elevation
+            let elevation = self.stations.pvc.elevation.unwrap()
                 + self.dimensions.incoming_grade * distance_delta
                 + a * distance_delta.powi(2);
             return Ok(Station {
                 value: station.value,
-                elevation,
+                elevation: Some(elevation),
+                ..Default::default()
             });
         }
 

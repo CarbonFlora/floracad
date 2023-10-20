@@ -390,7 +390,11 @@ impl CurveSolver {
             CurveSolver::Vertical(vertical_data) => {
                 let value = coerce_station_value(&vertical_data.input_obstacle_station)?;
                 let elevation = coerce_elevation(&vertical_data.input_obstacle_elevation)?;
-                let station = Station { value, elevation };
+                let station = Station {
+                    value,
+                    elevation: Some(elevation),
+                    ..Default::default()
+                };
                 vertical_data
                     .obstacles
                     .interval
@@ -401,7 +405,7 @@ impl CurveSolver {
 
                 horizontal_data.pin.interval.push(Station {
                     value,
-                    elevation: 0.0,
+                    ..Default::default()
                 });
             }
         }

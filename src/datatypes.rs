@@ -5,21 +5,32 @@ use anyhow::Result;
 
 use crate::vertical::ObstacleType;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Station {
     pub value: f64,
-    pub elevation: f64,
+    pub elevation: Option<f64>,
+    pub deflection: Option<f64>,
+    pub chord: Option<f64>,
 }
 
 impl fmt::Display for Station {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "STA: {:.0}+{:.2}, ELEV: {:.2}",
+        let mut cohesive_sta = format!(
+            "STA: {:.0}+{:.2}",
             (self.value / 100.0).trunc(),
-            (self.value - (self.value / 100.0).trunc() * 100.0).abs(),
-            self.elevation
-        )?;
+            (self.value - (self.value / 100.0).trunc() * 100.0).abs()
+        );
+        if let Some(elevation) = self.elevation {
+            cohesive_sta += format!(" ELEV: {:.2}", elevation).as_str();
+        }
+        if let Some(deflection) = self.deflection {
+            cohesive_sta += format!(" DEFL: {:.2}", deflection).as_str();
+        }
+        if let Some(chord) = self.chord {
+            cohesive_sta += format!(" CHOR: {:.2}", chord).as_str();
+        }
+
+        write!(f, "{}", cohesive_sta.as_str())?;
         Ok(())
     }
 }

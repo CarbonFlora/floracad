@@ -139,8 +139,8 @@ impl HorizontalData {
     fn to_stations(&self, dimensions: &HorizontalDimensions) -> Result<HorizontalStations> {
         let starting_station = Station {
             value: coerce_station_value(&self.input_station)?,
-            elevation: 0.0,
-        }; //todo!() this elevation is a hack
+            ..Default::default()
+        };
 
         match self.input_station_method {
             HorizontalStationDefinition::PC => Ok(HorizontalStations {
@@ -164,42 +164,42 @@ impl HorizontalData {
     fn pc_to_pi(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
         Station {
             value: sts.value + dim.tangent,
-            elevation: 0.0,
+            ..Default::default()
         }
     }
 
     fn pc_to_pt(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
         Station {
             value: sts.value + dim.curve_length,
-            elevation: 0.0,
+            ..Default::default()
         }
     }
 
     fn pi_to_pc(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
         Station {
             value: sts.value - dim.tangent,
-            elevation: 0.0,
+            ..Default::default()
         }
     }
 
     fn pi_to_pt(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
         Station {
             value: sts.value + dim.tangent,
-            elevation: 0.0,
+            ..Default::default()
         }
     }
 
     fn pt_to_pc(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
         Station {
             value: sts.value - dim.curve_length,
-            elevation: 0.0,
+            ..Default::default()
         }
     }
 
     fn pt_to_pi(&self, sts: Station, dim: &HorizontalDimensions) -> Station {
         Station {
             value: sts.value - dim.tangent,
-            elevation: 0.0,
+            ..Default::default()
         }
     }
 

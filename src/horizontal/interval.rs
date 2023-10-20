@@ -10,7 +10,7 @@ impl HorizontalCurve {
         let mut count = 0usize;
         let mut running = Station {
             value: first_station,
-            elevation: 0.0,
+            ..Default::default()
         };
 
         loop {

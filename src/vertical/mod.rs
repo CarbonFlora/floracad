@@ -86,7 +86,8 @@ impl VerticalData {
     fn to_stations(&self, dimensions: &VerticalDimensions) -> Result<VerticalStations> {
         let starting_station = Station {
             value: coerce_station_value(&self.input_station)?,
-            elevation: coerce_elevation(&self.input_elevation)?,
+            elevation: Some(coerce_elevation(&self.input_elevation)?),
+            ..Default::default()
         };
 
         match self.input_method {
@@ -111,46 +112,56 @@ impl VerticalData {
     fn pvc_to_pvi(&self, sts: Station, dim: &VerticalDimensions) -> Station {
         Station {
             value: sts.value + dim.curve_length / 2.0,
-            elevation: sts.elevation + dim.incoming_grade * dim.curve_length / 2.0,
+            elevation: Some(sts.elevation.unwrap() + dim.incoming_grade * dim.curve_length / 2.0),
+            ..Default::default()
         }
     }
 
     fn pvc_to_pvt(&self, sts: Station, dim: &VerticalDimensions) -> Station {
         Station {
             value: sts.value + dim.curve_length,
-            elevation: sts.elevation
-                + dim.incoming_grade * dim.curve_length / 2.0
-                + dim.outgoing_grade * dim.curve_length / 2.0,
+            elevation: Some(
+                sts.elevation.unwrap()
+                    + dim.incoming_grade * dim.curve_length / 2.0
+                    + dim.outgoing_grade * dim.curve_length / 2.0,
+            ),
+            ..Default::default()
         }
     }
 
     fn pvi_to_pvc(&self, sts: Station, dim: &VerticalDimensions) -> Station {
         Station {
             value: sts.value - dim.curve_length / 2.0,
-            elevation: sts.elevation - dim.incoming_grade * dim.curve_length / 2.0,
+            elevation: Some(sts.elevation.unwrap() - dim.incoming_grade * dim.curve_length / 2.0),
+            ..Default::default()
         }
     }
 
     fn pvi_to_pvt(&self, sts: Station, dim: &VerticalDimensions) -> Station {
         Station {
             value: sts.value + dim.curve_length / 2.0,
-            elevation: sts.elevation + dim.outgoing_grade * dim.curve_length / 2.0,
+            elevation: Some(sts.elevation.unwrap() + dim.outgoing_grade * dim.curve_length / 2.0),
+            ..Default::default()
         }
     }
 
     fn pvt_to_pvc(&self, sts: Station, dim: &VerticalDimensions) -> Station {
         Station {
             value: sts.value - dim.curve_length,
-            elevation: sts.elevation
-                - dim.incoming_grade * dim.curve_length / 2.0
-                - dim.outgoing_grade * dim.curve_length / 2.0,
+            elevation: Some(
+                sts.elevation.unwrap()
+                    - dim.incoming_grade * dim.curve_length / 2.0
+                    - dim.outgoing_grade * dim.curve_length / 2.0,
+            ),
+            ..Default::default()
         }
     }
 
     fn pvt_to_pvi(&self, sts: Station, dim: &VerticalDimensions) -> Station {
         Station {
             value: sts.value - dim.curve_length / 2.0,
-            elevation: sts.elevation - dim.outgoing_grade * dim.curve_length / 2.0,
+            elevation: Some(sts.elevation.unwrap() - dim.outgoing_grade * dim.curve_length / 2.0),
+            ..Default::default()
         }
     }
 
@@ -188,14 +199,16 @@ mod vertical_tests {
             curve.stations.pvc,
             Station {
                 value: 1028200.,
-                elevation: 1000.28
+                elevation: Some(1000.28),
+                ..Default::default()
             }
         );
         assert_eq!(
             curve.stations.pvt,
             Station {
                 value: 1028700.,
-                elevation: 999.955
+                elevation: Some(999.955),
+                ..Default::default()
             }
         );
     }
@@ -216,14 +229,16 @@ mod vertical_tests {
             curve.stations.pvc,
             Station {
                 value: -1028700.,
-                elevation: 1000.28
+                elevation: Some(1000.28),
+                ..Default::default()
             }
         );
         assert_eq!(
             curve.stations.pvt,
             Station {
                 value: -1028200.,
-                elevation: 999.955
+                elevation: Some(999.955),
+                ..Default::default()
             }
         );
     }
@@ -244,14 +259,16 @@ mod vertical_tests {
             curve.stations.pvc,
             Station {
                 value: -250.,
-                elevation: 1000.28
+                elevation: Some(1000.28),
+                ..Default::default()
             }
         );
         assert_eq!(
             curve.stations.pvt,
             Station {
                 value: 250.,
-                elevation: 999.955
+                elevation: Some(999.955),
+                ..Default::default()
             }
         );
     }
@@ -272,14 +289,16 @@ mod vertical_tests {
             curve.stations.pvi,
             Station {
                 value: 0.,
-                elevation: 1001.38
+                elevation: Some(1001.38),
+                ..Default::default()
             }
         );
         assert_eq!(
             curve.stations.pvt,
             Station {
                 value: 250.,
-                elevation: 999.955
+                elevation: Some(999.955),
+                ..Default::default()
             }
         );
     }
@@ -300,14 +319,16 @@ mod vertical_tests {
             curve.stations.pvi,
             Station {
                 value: 0.,
-                elevation: 1001.38
+                elevation: Some(1001.38),
+                ..Default::default()
             }
         );
         assert_eq!(
             curve.stations.pvc,
             Station {
                 value: -250.,
-                elevation: 1000.28
+                elevation: Some(1000.28),
+                ..Default::default()
             }
         );
     }
