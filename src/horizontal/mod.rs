@@ -85,14 +85,13 @@ impl HorizontalData {
                 radius = coerce_length(&self.input_radius)?;
                 curve_angle = Angle::from(self.input_curve_angle.as_str())?;
 
-                curve_length = radius * curve_angle.decimal_degrees * PI / 180.0;
+                curve_length = radius * curve_angle.to_decimal_degrees() * PI / 180.0;
                 tangent = radius * (curve_angle.radians / 2.0).tan();
                 external = radius * (1.0 / (curve_angle.radians / 2.0).cos() - 1.0);
                 middle_ordinate = radius * (1.0 - (curve_angle.radians / 2.0).cos());
                 long_chord = 2.0 * radius * (curve_angle.radians / 2.0).sin();
                 curve_length_100 = Angle {
                     radians: 5729.6 / radius * PI / 180.0,
-                    decimal_degrees: 5729.6 / radius,
                 };
                 let m = coerce_length(&self.input_m).unwrap_or_default();
 
@@ -105,15 +104,13 @@ impl HorizontalData {
 
                 curve_angle = Angle {
                     radians: (tangent / radius).atan() * 2.,
-                    decimal_degrees: ((tangent / radius).atan() * 2.) * 180. / PI,
                 };
-                curve_length = radius * curve_angle.decimal_degrees * PI / 180.0;
+                curve_length = radius * curve_angle.to_decimal_degrees() * PI / 180.0;
                 external = radius * (1.0 / (curve_angle.radians / 2.0).cos() - 1.0);
                 middle_ordinate = radius * (1.0 - (curve_angle.radians / 2.0).cos());
                 long_chord = 2.0 * radius * (curve_angle.radians / 2.0).sin();
                 curve_length_100 = Angle {
                     radians: 5729.6 / radius * PI / 180.0,
-                    decimal_degrees: 5729.6 / radius,
                 };
                 let m = coerce_length(&self.input_m).unwrap_or_default();
 
@@ -142,23 +139,25 @@ impl HorizontalData {
             ..Default::default()
         };
 
-        match self.input_station_method {
-            HorizontalStationDefinition::PC => Ok(HorizontalStations {
+        let stations = match self.input_station_method {
+            HorizontalStationDefinition::PC => HorizontalStations {
                 pc: starting_station,
                 pi: self.pc_to_pi(starting_station, dimensions),
                 pt: self.pc_to_pt(starting_station, dimensions),
-            }),
-            HorizontalStationDefinition::PI => Ok(HorizontalStations {
+            },
+            HorizontalStationDefinition::PI => HorizontalStations {
                 pc: self.pi_to_pc(starting_station, dimensions),
                 pi: starting_station,
                 pt: self.pi_to_pt(starting_station, dimensions),
-            }),
-            HorizontalStationDefinition::PT => Ok(HorizontalStations {
+            },
+            HorizontalStationDefinition::PT => HorizontalStations {
                 pc: self.pt_to_pc(starting_station, dimensions),
                 pi: self.pt_to_pi(starting_station, dimensions),
                 pt: starting_station,
-            }),
-        }
+            },
+        };
+
+        return Ok(stations);
     }
 
     fn pc_to_pi(&self, sts: Station, dim: &HorizontalDimensions) -> Station {

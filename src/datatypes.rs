@@ -9,7 +9,7 @@ use crate::vertical::ObstacleType;
 pub struct Station {
     pub value: f64,
     pub elevation: Option<f64>,
-    pub deflection: Option<f64>,
+    pub deflection: Option<Angle>,
     pub chord: Option<f64>,
 }
 
@@ -65,10 +65,9 @@ impl fmt::Display for ObstacleDetail {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Angle {
     pub radians: f64,
-    pub decimal_degrees: f64,
 }
 
 impl fmt::Display for Angle {
@@ -77,7 +76,7 @@ impl fmt::Display for Angle {
             f,
             "DMS: {} | DD: {:.2} | RAD: {:.2}",
             self.to_dms(),
-            self.decimal_degrees,
+            self.to_decimal_degrees(),
             self.radians
         )?;
         Ok(())
@@ -110,7 +109,6 @@ impl Angle {
 
                 return Ok(Angle {
                     radians: decimal_degrees * PI / 180.0,
-                    decimal_degrees,
                 });
             } else if raw_data.chars().all(|c| matches!(c, '0'..='9' | '.')) {
                 let decimal_degrees = raw_data.trim().parse::<f64>()?;
@@ -121,7 +119,6 @@ impl Angle {
 
                 return Ok(Angle {
                     radians: decimal_degrees * PI / 180.0,
-                    decimal_degrees,
                 });
             }
         }
@@ -130,11 +127,20 @@ impl Angle {
     }
 
     pub fn to_dms(&self) -> String {
-        let degrees = self.decimal_degrees.trunc();
-        let minutes = ((self.decimal_degrees - degrees) * 60.0).trunc();
-        let seconds = (((self.decimal_degrees - degrees) * 60.0) - minutes) * 60.0;
+        let degrees = self.to_decimal_degrees().trunc();
+        let mut minutes = ((self.to_decimal_degrees() - degrees) * 60.0).trunc();
+        let mut seconds = (((self.to_decimal_degrees() - degrees) * 60.0) - minutes) * 60.0;
+
+        if (60. - seconds).abs() < 0.000001 {
+            seconds = 0.;
+            minutes += 1.;
+        }
 
         format!("{:.0}d{:.0}\'{:.2}\"", degrees, minutes, seconds)
+    }
+
+    pub fn to_decimal_degrees(&self) -> f64 {
+        return self.radians * 180. / PI;
     }
 }
 
